@@ -1,0 +1,327 @@
+ChatGpt'ye yazdığım: "Hastane randevu sistemi için algoritma: kimlik doğrulama, poliklinik seçimi, doktor listesi görüntüleme, uygun saatleri gösterme, randevu onaylama ve SMS gönderme. Pseudocode yaz."
+ChatGpt'nin verdiği cevap:
+Tabii! Aşağıda hastane randevu sistemi için adım adım, koşullar ve döngüleri içeren bir pseudocode var.
+Döngüler için DÖNGÜ, koşullar için EĞER-İSE, her adımı BASLA ve BITIR ile başlattım:
+
+// HASTANE RANDEVU SİSTEMİ PSEUDOCODE
+
+BASLA
+
+// 1. Kimlik Doğrulama
+YAZ "Lütfen TC Kimlik Numaranızı ve şifrenizi giriniz."
+OKU tc_no, sifre
+
+EĞER dogrula_kimlik(tc_no, sifre) = DOGRU ISE
+    YAZ "Kimlik doğrulama başarılı. Hoş geldiniz."
+DEGILSE
+    YAZ "Kimlik doğrulama başarısız. Randevu işlemi iptal edildi."
+    BITIR
+SON_EGER
+
+// 2. Poliklinik Seçimi
+YAZ "Poliklinik seçiniz: (1) Dahiliye (2) Kardiyoloji (3) Ortopedi (4) Göz"
+OKU poliklinik
+
+// 3. Doktor Listesi Görüntüleme
+YAZ poliklinik + " polikliniği için doktorlar listeleniyor..."
+DOKTOR_LISTESI = doktorlari_getir(poliklinik)
+DÖNGÜ her doktor IN DOKTOR_LISTESI
+    YAZ doktor.id + " - " + doktor.ad
+SON_DÖNGÜ
+
+// 4. Doktor Seçimi
+YAZ "Randevu almak istediğiniz doktorun ID'sini giriniz:"
+OKU secilen_doktor_id
+
+// 5. Uygun Saatleri Gösterme
+YAZ "Seçilen doktorun uygun saatleri:"
+SAAT_LISTESI = uygun_saatler(secilen_doktor_id)
+DÖNGÜ her saat IN SAAT_LISTESI
+    YAZ saat
+SON_DÖNGÜ
+
+// 6. Randevu Seçimi ve Onaylama
+YAZ "Randevu almak istediğiniz saati giriniz:"
+OKU secilen_saat
+
+EĞER randevu_alinabilir(secilen_doktor_id, secilen_saat) = DOGRU ISE
+    onay_kodu = randevu_onayla(tc_no, secilen_doktor_id, secilen_saat)
+    YAZ "Randevunuz başarıyla oluşturuldu. Onay kodu: " + onay_kodu
+DEGILSE
+    YAZ "Seçilen saat dolu. Lütfen başka saat seçiniz."
+    BITIR
+SON_EGER
+
+// 7. SMS Gönderme
+gonder_SMS(tc_no, "Randevunuz " + poliklinik + " polikliniğinde, " + secilen_saat + " saatinde. Onay kodu: " + onay_kodu)
+
+BITIR
+İstersen bunu Graphviz DOT formatına çevirip akış diyagramı hâline de getirebilirim. Bunu yapayım mı?
+
+ChatGpt'ye yazdığım:"Sistem Gereksinimlerini Hasta kimlik doğrulama (TC No), İşlem seçimi: 1-Randevu Al, 2-Tahlil Sonucu Gör (koşul), Randevu modülü: Poliklinik seçimi, doktor listesi, uygun saatler (döngü), Randevu onayı ve SMS gönderimi olacak şekilde düzenler misin?
+Burada İstenen sistem gereksinimlerini de ekleyerek daha geniş taslak almak istedim
+ChatGpt'nin buna cevabı:Harika — verdiğin sistem gereksinimlerine göre algoritmayı daha sade, net ve gereksinim odaklı şekilde yazabiliriz.
+Aşağıda bu hastane randevu sisteminin pseudocode’u yer alıyor 👇
+
+// HASTANE RANDEVU SİSTEMİ PSEUDOCODE
+
+BASLA
+
+// 1. Hasta Kimlik Doğrulama
+YAZ "TC Kimlik Numaranızı giriniz:"
+OKU tc_no
+
+EĞER dogrula_kimlik(tc_no) = DOGRU ISE
+    YAZ "Kimlik doğrulama başarılı."
+DEGILSE
+    YAZ "Kimlik doğrulama başarısız. Sistemden çıkılıyor."
+    BITIR
+SON_EGER
+
+// 2. İşlem Seçimi
+YAZ "İşlem seçiniz: (1) Randevu Al  (2) Tahlil Sonucu Gör"
+OKU secim
+
+EĞER secim = 1 ISE
+    // 3. Randevu Modülü
+    YAZ "Poliklinik seçiniz:"
+    OKU poliklinik
+    
+    DOKTOR_LISTESI = doktorlari_getir(poliklinik)
+    DÖNGÜ her doktor IN DOKTOR_LISTESI
+        YAZ doktor.id + " - " + doktor.ad
+    SON_DÖNGÜ
+    
+    YAZ "Doktor ID’si seçiniz:"
+    OKU secilen_doktor_id
+    
+    SAAT_LISTESI = uygun_saatler(secilen_doktor_id)
+    YAZ "Uygun saatler:"
+    DÖNGÜ her saat IN SAAT_LISTESI
+        YAZ saat
+    SON_DÖNGÜ
+    
+    YAZ "Randevu almak istediğiniz saati giriniz:"
+    OKU secilen_saat
+    
+    randevu_onayla(tc_no, secilen_doktor_id, secilen_saat)
+    gonder_SMS(tc_no, "Randevunuz onaylandı: " + secilen_saat)
+    
+    YAZ "Randevunuz başarıyla oluşturuldu ve SMS gönderildi."
+    
+EĞER secim = 2 ISE
+    // 4. Tahlil Sonucu Gör
+    YAZ "Tahlil sonuçlarınız görüntüleniyor..."
+    goster_tahlil_sonuclari(tc_no)
+DEGILSE
+    YAZ "Geçersiz seçim. Sistemden çıkılıyor."
+SON_EGER
+
+BITIR
+
+ChatGpt'ye yazdığım:"Tahlil sonucu goruntuleme sistemi: kimlik dogrulama, tahlil varlıgı kontrolu, sonuc hazır mı kontrolu, goruntuleme veya bekleme mesajı, PDF indirme. Pseudocode yaz" Randevu alma sistemi istenen gereksinimleri de ekledikten sonra daha düzgün bir hal aldığından bir sonraki sözde kod'a geçtim.
+Gereksinimleri eklemeden önce daha sade ve anlaşılabilir bir taslak alabilmek için önce prompt'u giriyorum.
+ChatGpt'nin buna cevabı:
+Elbette! Aşağıda verdiğin gereksinimlere tam uygun şekilde hazırlanmış, koşul ve işlem sırasını açıkça gösteren “Tahlil Sonucu Görüntüleme Sistemi” pseudocode’u yer alıyor 👇
+
+// TAHLİL SONUCU GÖRÜNTÜLEME SİSTEMİ PSEUDOCODE
+
+BASLA
+
+// 1. Kimlik Doğrulama
+YAZ "Lütfen TC Kimlik Numaranızı giriniz:"
+OKU tc_no
+
+EĞER dogrula_kimlik(tc_no) = DOGRU ISE
+    YAZ "Kimlik doğrulama başarılı."
+DEGILSE
+    YAZ "Kimlik doğrulama başarısız. Sistemden çıkılıyor."
+    BITIR
+SON_EGER
+
+// 2. Tahlil Varlığı Kontrolü
+EĞER tahlil_var_mi(tc_no) = DOGRU ISE
+    YAZ "Tahlil kaydı bulundu."
+    
+    // 3. Sonuç Hazır mı Kontrolü
+    EĞER sonuc_hazir_mi(tc_no) = DOGRU ISE
+        YAZ "Tahlil sonuçlarınız hazır."
+        goster_tahlil_sonuclari(tc_no)
+        
+        // 4. PDF İndirme Seçeneği
+        YAZ "Sonuçları PDF olarak indirmek ister misiniz? (E/H)"
+        OKU cevap
+        EĞER cevap = "E" ISE
+            indir_PDF(tc_no)
+            YAZ "PDF indiriliyor..."
+        DEGILSE
+            YAZ "PDF indirme iptal edildi."
+        SON_EGER
+        
+    DEGILSE
+        YAZ "Tahlil sonuçlarınız henüz hazır değil. Lütfen daha sonra tekrar deneyiniz."
+    SON_EGER
+    
+DEGILSE
+    YAZ "Sistemde herhangi bir tahlil kaydınız bulunmamaktadır."
+SON_EGER
+
+BITIR
+İstersen bu algoritmayı da bir Graphviz DOT (akış diyagramı) formatına çevirebilirim; böylece işlem adımları görsel hale gelir.
+Yapayım mı?
+ChatGpt'ye yazdığım:"Sistemi Tahlil modülü: Tahlil var mı kontrolü (koşul),Sonuç hazır mı kontrolü (koşul), Sonuç görüntüleme veya bekleme mesajı, Sonuçları PDF indir seçeneği,Başka işlem yapmak ister misiniz? (döngü) durumlarını içeren bir şekilde düzenler misin"
+ChatGpt'nin buna cevabı: 
+Harika! 💡
+Bu ek gereksinimlerle birlikte tahlil modülü daha gerçekçi ve kullanıcı etkileşimli hale geldi.
+Aşağıda, bu yeni özellikleri içeren detaylı ve açıklamalı pseudocode yer alıyor 👇
+
+// TAHLİL MODÜLÜ PSEUDOCODE
+
+BASLA
+
+// 1. Kimlik Doğrulama
+YAZ "Lütfen TC Kimlik Numaranızı giriniz:"
+OKU tc_no
+
+EĞER dogrula_kimlik(tc_no) = DOGRU ISE
+    YAZ "Kimlik doğrulama başarılı."
+DEGILSE
+    YAZ "Kimlik doğrulama başarısız. Sistemden çıkılıyor."
+    BITIR
+SON_EGER
+
+// 2. Ana Döngü: İşlem Tekrarı
+TEKRAR
+    YAZ "---- Tahlil Modülüne Hoşgeldiniz ----"
+    
+    // 3. Tahlil Kaydı Kontrolü
+    EĞER tahlil_var_mi(tc_no) = DOGRU ISE
+        YAZ "Tahlil kaydı bulundu."
+        
+        // 4. Sonuç Hazır mı Kontrolü
+        EĞER sonuc_hazir_mi(tc_no) = DOGRU ISE
+            YAZ "Tahlil sonuçlarınız hazır."
+            
+            // 5. Sonuç Görüntüleme
+            goster_tahlil_sonuclari(tc_no)
+            
+            // 6. PDF İndirme Seçeneği
+            YAZ "Sonuçları PDF olarak indirmek ister misiniz? (E/H)"
+            OKU cevap
+            EĞER cevap = "E" ISE
+                indir_PDF(tc_no)
+                YAZ "PDF başarıyla indirildi."
+            DEGILSE
+                YAZ "PDF indirme iptal edildi."
+            SON_EGER
+            
+        DEGILSE
+            YAZ "Tahlil sonuçlarınız henüz hazır değil. Lütfen daha sonra tekrar deneyiniz."
+        SON_EGER
+        
+    DEGILSE
+        YAZ "Sistemde herhangi bir tahlil kaydınız bulunmamaktadır."
+    SON_EGER
+    
+    // 7. İşlem Tekrarı Seçeneği
+    YAZ "Başka bir işlem yapmak ister misiniz? (E/H)"
+    OKU tekrar
+    
+SONA_KADAR_DONGU tekrar = "E"
+
+YAZ "Sistemden çıkılıyor. Geçmiş olsun!"
+BITIR
+İstersen bunu da Graphviz DOT formatına (akış diyagramı olarak) çevirebilirim, görselleştirmesi çok şık oluyor.
+Hazırlayayım mı?
+
+ChatGpt'ye yazdığım: "şimdi son olarak ana menü ile iki modülü birleştirip DOT kodunda her modülü ayrı olarak düzenler misin?" 
+ChatGpt'nin cevabı: 
+Mükemmel! 🎯
+Şimdi hastane sisteminin ana menü, randevu modülü ve tahlil modülü bölümlerini tek bir akış diyagramında (Graphviz DOT) birleştirelim.
+Her modül, subgraph (küme) olarak düzenlendi — böylece yapı net, düzenli ve profesyonel görünüyor.
+
+🧩 Birleştirilmiş Hastane Sistemi (Graphviz DOT)
+digraph HASTANE_SISTEMI {
+  rankdir=TB;
+  node [shape=box, style=rounded, fontname="Arial"];
+
+  // ===== ANA MENÜ =====
+  subgraph cluster_ana_menu {
+    label="ANA MENÜ";
+    color=lightblue;
+
+    basla [shape=oval, label="BASLA"];
+    kimlik [shape=parallelogram, label="TC Kimlik Numarasını Gir"];
+    dogrulama [shape=diamond, label="Kimlik Doğrulandı mı?"];
+    islem_sec [shape=diamond, label="İşlem Seçimi:\n1-Randevu Al\n2-Tahlil Sonucu Gör"];
+    bitir [shape=oval, label="BİTİR"];
+
+    basla -> kimlik -> dogrulama;
+    dogrulama -> bitir [label="HAYIR"];
+    dogrulama -> islem_sec [label="EVET"];
+  }
+
+  // ===== RANDEVU MODÜLÜ =====
+  subgraph cluster_randevu {
+    label="RANDEVU MODÜLÜ";
+    color=lightgreen;
+
+    poliklinik [shape=box, label="Poliklinik Seçimi"];
+    doktor [shape=box, label="Doktor Listesi Göster"];
+    saat [shape=box, label="Uygun Saatleri Göster"];
+    onay [shape=diamond, label="Randevu Onaylandı mı?"];
+    sms [shape=parallelogram, label="SMS Gönder"];
+    randevu_cikis [shape=box, label="Ana Menüye Dön"];
+
+    poliklinik -> doktor -> saat -> onay;
+    onay -> sms [label="EVET"];
+    onay -> randevu_cikis [label="HAYIR"];
+    sms -> randevu_cikis;
+  }
+
+  // ===== TAHLİL MODÜLÜ =====
+  subgraph cluster_tahlil {
+    label="TAHLİL MODÜLÜ";
+    color=lightcoral;
+
+    tahlil_var [shape=diamond, label="Tahlil Kaydı Var mı?"];
+    sonuc_hazir [shape=diamond, label="Sonuç Hazır mı?"];
+    goster [shape=box, label="Sonuçları Görüntüle"];
+    pdf_sec [shape=diamond, label="PDF İndirilsin mi?"];
+    pdf_indir [shape=box, label="PDF İndir"];
+    bekle [shape=box, label="Sonuç Hazır Değil\nBekleyiniz"];
+    tahlil_yok [shape=box, label="Tahlil Kaydı Bulunamadı"];
+    tahlil_cikis [shape=box, label="Ana Menüye Dön"];
+
+    tahlil_var -> sonuc_hazir [label="EVET"];
+    tahlil_var -> tahlil_yok [label="HAYIR"];
+    sonuc_hazir -> goster [label="EVET"];
+    sonuc_hazir -> bekle [label="HAYIR"];
+    goster -> pdf_sec;
+    pdf_sec -> pdf_indir [label="EVET"];
+    pdf_sec -> tahlil_cikis [label="HAYIR"];
+    pdf_indir -> tahlil_cikis;
+    tahlil_yok -> tahlil_cikis;
+    bekle -> tahlil_cikis;
+  }
+
+  // ===== MODÜLLER ARASI GEÇİŞLER =====
+  islem_sec -> poliklinik [label="1 - Randevu Al"];
+  islem_sec -> tahlil_var [label="2 - Tahlil Sonucu Gör"];
+  randevu_cikis -> islem_sec;
+  tahlil_cikis -> islem_sec;
+  bitir [shape=oval, label="SİSTEM SONU"];
+}
+
+🧠 Kısa Açıklama (6 Satır):
+
+Bu sistemde kullanıcı önce kimlik doğrulaması yapar.
+Ana menüden randevu alma veya tahlil sonucu görüntüleme modülünü seçebilir.
+Randevu modülünde kullanıcı poliklinik, doktor ve saat seçerek onay verir, ardından SMS bilgilendirmesi yapılır.
+Tahlil modülünde ise sistem tahlil kaydı ve sonuç durumunu kontrol eder.
+Sonuçlar hazırsa kullanıcı görüntüleyip PDF indirebilir, değilse bilgilendirilir.
+Her işlem sonunda kullanıcı ana menüye dönebilir veya çıkış yapabilir.
+
+İstersen bu diyagramın görselini de oluşturup sana PDF veya PNG olarak gösterebilirim — ister mısın?
+
+(burada yazdığı dot kodunu akış şemasında kontrol ettikten sonra bir problem görmediğim için daha fazla bir işlem yaptırmadım)
