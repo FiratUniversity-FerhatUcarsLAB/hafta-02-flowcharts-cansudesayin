@@ -1,0 +1,118 @@
+digraph E_Ticaret {
+    rankdir=TB;
+    node [shape=box];
+
+    // Başlangıç
+    BASLA [label="BASLA", shape=oval];
+
+    // Kullanıcı Girişi
+    KULLANICI_GIRIS [label="Kullanıcı adı ve şifre oku", shape=parallelogram];
+    GIRIS_DOGRULAMA [label="Giriş bilgilerini doğrula", shape=diamond];
+
+    // Giriş başarılı veya misafir
+    GIRIS_DOGRU [label="Giriş başarılı", shape=box];
+    GIRIS_YANLIS [label="Misafir olarak devam", shape=box];
+
+    // Ürün Kategorileri Döngüsü
+    KATEGORI_SECIM [label="Kategori seç", shape=parallelogram];
+    DONGU_KATEGORI [label="Başka kategori bakmak ister mi?", shape=diamond];
+
+    // Ürün ekleme ve stok kontrol
+    URUN_EKLE [label="Ürün ID ve adet gir", shape=parallelogram];
+    STOK_KONTROL [label="Stok yeterli mi?", shape=diamond];
+    URUN_SEPETE_EKLE [label="Ürünü sepete ekle", shape=box];
+    STOK_YETERSIZ [label="Yetersiz stok", shape=box];
+
+    // Sepeti Görüntüleme ve Düzenleme
+    SEPET_GORUNTULE [label="Sepeti görüntüle", shape=box];
+    DUZENLEME_DONGU [label="Ürün sil veya adet değiştir?", shape=diamond];
+    SEPET_GUNCELLE [label="Sepeti güncelle", shape=box];
+
+    // İndirim Kodu
+    INDIRIM_KODU [label="İndirim kodu oku", shape=parallelogram];
+    TUTAR_SINIRI [label="Sepet >=100 TL?", shape=diamond];
+    KOD_DURUMU [label="Kod durumu: Geçerli / Süre Bitmiş / Geçersiz", shape=diamond];
+    INDIRIM_UYGULA [label="İndirim uygulandı", shape=box];
+    KOD_SURE_BITMIS [label="Kullanım tarihi geçmiş", shape=box];
+    KOD_GECERSIZ [label="Kod geçersiz", shape=box];
+    TUTAR_KUCUK [label="İndirim sadece 100 TL ve üzeri", shape=box];
+
+    // Kargo Hesaplama
+    KARGO_HESAPLA [label="Kargo ücreti hesapla (>=200 TL ücretsiz)", shape=diamond];
+    KARGO_UCRETI_0 [label="Kargo ücretsiz", shape=box];
+    KARGO_UCRETI_30 [label="Kargo 30 TL", shape=box];
+
+    // Minimum Tutar Kontrolü
+    MINIMUM_TUTAR [label="Genel toplam >= 50 TL?", shape=diamond];
+    TUTAR_YETERSIZ [label="Hata: Minimum 50 TL", shape=box];
+
+    // Ödeme Yöntemi
+    ODEME_TIPI [label="Ödeme yöntemi seç", shape=diamond];
+    KART_BILGI [label="Kart bilgilerini gir", shape=parallelogram];
+    ODEME_KONTROL [label="Ödeme başarılı mı?", shape=diamond];
+    ODEME_BASARILI [label="Ödeme başarılı", shape=box];
+    ODEME_RED [label="Ödeme reddedildi, iptal", shape=box];
+    KAPIDA_ODEME [label="Kapıda ödeme seçildi", shape=box];
+
+    // Sipariş Onayı
+    SIPARIS_ONAY [label="Sipariş oluşturuldu, numara ve tahmini teslim", shape=box];
+
+    // Bitir
+    BITIR [label="BITIR", shape=oval];
+
+    // Kenar Bağlantıları
+
+    BASLA -> KULLANICI_GIRIS;
+    KULLANICI_GIRIS -> GIRIS_DOGRULAMA;
+    GIRIS_DOGRULAMA -> GIRIS_DOGRU [label="EVET"];
+    GIRIS_DOGRULAMA -> GIRIS_YANLIS [label="HAYIR"];
+
+    GIRIS_DOGRU -> KATEGORI_SECIM;
+    GIRIS_YANLIS -> KATEGORI_SECIM;
+
+    KATEGORI_SECIM -> URUN_EKLE;
+    URUN_EKLE -> STOK_KONTROL;
+    STOK_KONTROL -> URUN_SEPETE_EKLE [label="EVET"];
+    STOK_KONTROL -> STOK_YETERSIZ [label="HAYIR"];
+    URUN_SEPETE_EKLE -> DONGU_KATEGORI;
+    STOK_YETERSIZ -> DONGU_KATEGORI;
+    DONGU_KATEGORI -> KATEGORI_SECIM [label="EVET"];
+    DONGU_KATEGORI -> SEPET_GORUNTULE [label="HAYIR"];
+
+    SEPET_GORUNTULE -> DUZENLEME_DONGU;
+    DUZENLEME_DONGU -> SEPET_GUNCELLE [label="EVET"];
+    DUZENLEME_DONGU -> INDIRIM_KODU [label="HAYIR"];
+    SEPET_GUNCELLE -> DUZENLEME_DONGU;
+
+    INDIRIM_KODU -> TUTAR_SINIRI;
+    TUTAR_SINIRI -> KOD_DURUMU [label="EVET"];
+    TUTAR_SINIRI -> TUTAR_KUCUK [label="HAYIR"];
+    KOD_DURUMU -> INDIRIM_UYGULA [label="GEÇERLİ"];
+    KOD_DURUMU -> KOD_SURE_BITMIS [label="SÜRE BİTMİŞ"];
+    KOD_DURUMU -> KOD_GECERSIZ [label="GEÇERSİZ"];
+    INDIRIM_UYGULA -> KARGO_HESAPLA;
+    KOD_SURE_BITMIS -> KARGO_HESAPLA;
+    KOD_GECERSIZ -> KARGO_HESAPLA;
+    TUTAR_KUCUK -> KARGO_HESAPLA;
+
+    KARGO_HESAPLA -> KARGO_UCRETI_0 [label="EVET"];
+    KARGO_HESAPLA -> KARGO_UCRETI_30 [label="HAYIR"];
+    KARGO_UCRETI_0 -> MINIMUM_TUTAR;
+    KARGO_UCRETI_30 -> MINIMUM_TUTAR;
+
+    MINIMUM_TUTAR -> SIPARIS_ONAY [label="EVET"];
+    MINIMUM_TUTAR -> TUTAR_YETERSIZ [label="HAYIR"];
+    TUTAR_YETERSIZ -> BITIR;
+
+    SIPARIS_ONAY -> ODEME_TIPI;
+    ODEME_TIPI -> KART_BILGI [label="Kart"];
+    ODEME_TIPI -> KAPIDA_ODEME [label="Kapıda Ödeme"];
+
+    KART_BILGI -> ODEME_KONTROL;
+    ODEME_KONTROL -> ODEME_BASARILI [label="EVET"];
+    ODEME_KONTROL -> ODEME_RED [label="HAYIR"];
+
+    ODEME_BASARILI -> BITIR;
+    ODEME_RED -> BITIR;
+    KAPIDA_ODEME -> BITIR;
+}
