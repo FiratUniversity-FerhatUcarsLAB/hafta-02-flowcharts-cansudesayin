@@ -1,0 +1,78 @@
+digraph ATM {
+  rankdir=TB;
+  node [fontname="Arial", fontsize=10];
+
+  start [shape=oval, label="BAŞLA"];
+  vars [shape=box, label="Sabit değerleri ve değişkenleri tanımla"];
+  loop_start [shape=diamond, label="Çekim tekrarı = DOĞRU mu?"];
+  
+  // PIN doğrulama
+  pin_loop [shape=diamond, label="PIN doğrulandı mı?"];
+  read_pin [shape=parallelogram, label="PIN kodunu oku"];
+  check_pin [shape=diamond, label="PIN doğru mu?"];
+  correct_pin [shape=box, label="PIN doğru → PIN_DOGRULANDI = DOĞRU"];
+  wrong_pin [shape=box, label="Hatalı PIN → hak = hak - 1"];
+  remaining_try [shape=parallelogram, label="Kalan hak sayısını yaz"];
+  block_card [shape=box, label="Kart bloke edildi"];
+  blocked_exit [shape=oval, label="Kart bloke → BİTİR"];
+  
+  // Tutar girişi ve kontroller
+  amount_input [shape=parallelogram, label="Çekilecek tutarı oku"];
+  multiple_20 [shape=diamond, label="Tutar 20'nin katı mı?"];
+  invalid_20 [shape=parallelogram, label="Hata: 20 TL'nin katı olmalı"];
+  limit_check [shape=diamond, label="Tutar günlük limit içinde mi?"];
+  invalid_limit [shape=parallelogram, label="Hata: Limit aşıldı"];
+  balance_check [shape=diamond, label="Yeterli bakiye var mı?"];
+  invalid_balance [shape=parallelogram, label="Hata: Bakiye yetersiz"];
+  
+  // İşlem başarılı
+  withdraw [shape=box, label="Bakiye ve limitleri güncelle"];
+  success [shape=parallelogram, label="İşlem başarılı. Parayı ver"];
+  
+  // Fiş işlemi
+  receipt_check [shape=diamond, label="Fiş basılsın mı?"];
+  print_receipt [shape=parallelogram, label="İşlem fişini yazdır"];
+  
+  // Tekrar işlemi
+  repeat_check [shape=parallelogram, label="Başka işlem yapmak ister misiniz? (E/H)"];
+  repeat_decision [shape=diamond, label="Seçim = H mı?"];
+  end [shape=oval, label="BİTİR"];
+  
+  // --- Bağlantılar ---
+  start -> vars -> loop_start;
+  
+  loop_start -> pin_loop [label="Evet"];
+  loop_start -> end [label="Hayır"];
+  
+  pin_loop -> read_pin [label="Hayır"];
+  pin_loop -> amount_input [label="Evet"];
+  
+  read_pin -> check_pin;
+  check_pin -> correct_pin [label="Evet"];
+  check_pin -> wrong_pin [label="Hayır"];
+  wrong_pin -> remaining_try;
+  remaining_try -> check_pin [label="Hakkı varsa"];
+  wrong_pin -> block_card [label="Hak = 0"];
+  block_card -> blocked_exit;
+  
+  correct_pin -> amount_input;
+  
+  amount_input -> multiple_20;
+  multiple_20 -> invalid_20 [label="Hayır"];
+  multiple_20 -> limit_check [label="Evet"];
+  
+  limit_check -> invalid_limit [label="Hayır"];
+  limit_check -> balance_check [label="Evet"];
+  
+  balance_check -> invalid_balance [label="Hayır"];
+  balance_check -> withdraw [label="Evet"];
+  
+  withdraw -> success -> receipt_check;
+  receipt_check -> print_receipt [label="Evet"];
+  receipt_check -> repeat_check [label="Hayır"];
+  print_receipt -> repeat_check;
+  
+  repeat_check -> repeat_decision;
+  repeat_decision -> loop_start [label="Hayır (E)"];
+  repeat_decision -> end [label="Evet (H)"];
+}
