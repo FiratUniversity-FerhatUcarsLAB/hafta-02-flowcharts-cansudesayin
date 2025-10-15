@@ -55,37 +55,34 @@ DÖNGÜ duzenleme = "EVET" İKEN
 SON_DÖNGÜ
 
 
-// 5. İndirim Kodu Uygulama (GÜNCELLENMİŞ)
+// 5. İndirim Kodu Uygulama (KOŞUL VE TUTAR SINIRI)
 YAZ "İndirim kodunuz varsa giriniz, yoksa 'YOK' yazınız."
 OKU indirim_kodu
 
 EGER indirim_kodu != "YOK" ISE
-    KOD_DURUMU = indirim_kontrol(indirim_kodu) // "GECERLI", "GECERSIZ", "SURE_BITMIS"
+    EGER sepet.TOPLAM() >= 100 ISE  // İndirim sadece 100 TL ve üzeri
+        KOD_DURUMU = indirim_kontrol(indirim_kodu) // "GECERLI", "GECERSIZ", "SURE_BITMIS"
 
-    EGER KOD_DURUMU = "GECERLI" ISE
-        sepet.INDIRIM_UYGULA(indirim_kodu)
-        YAZ "İndirim kodu başarıyla uygulandı."
+        EGER KOD_DURUMU = "GECERLI" ISE
+            sepet.INDIRIM_UYGULA(indirim_kodu)
+            YAZ "İndirim kodu başarıyla uygulandı."
 
-    DEGILSE EGER KOD_DURUMU = "SURE_BITMIS" ISE
-        YAZ "Bu kodun kullanım tarihi geçmiştir."
+        DEGILSE EGER KOD_DURUMU = "SURE_BITMIS" ISE
+            YAZ "Bu kodun kullanım tarihi geçmiştir."
 
-    DEGILSE EGER KOD_DURUMU = "GECERSIZ" ISE
-        YAZ "Bu kod geçersizdir."
+        DEGILSE EGER KOD_DURUMU = "GECERSIZ" ISE
+            YAZ "Bu kod geçersizdir."
 
+        SON_EGER
+
+    DEGILSE
+        YAZ "İndirim kodu sadece 100 TL ve üzeri alışverişlerde geçerlidir."
     SON_EGER
 SON_EGER
 
 
-// 6. Minimum Tutar Kontrolü (KOŞUL)
+// 6. Kargo Ücreti Hesaplama (KOŞUL: 200 TL Üzeri Ücretsiz)
 toplam_tutar = sepet.TOPLAM()
-EGER toplam_tutar < 50 ISE
-    YAZ "Alışveriş tamamlanamıyor. Minimum 50 TL harcama gereklidir."
-    YAZ "Sepetinize ürün ekleyiniz."
-    BITIR
-SON_EGER
-
-
-// 7. Kargo Ücreti Hesaplama (KOŞUL: 200 TL Üzeri Ücretsiz)
 EGER toplam_tutar >= 200 ISE
     kargo_ucreti = 0
     YAZ "Kargonuz ücretsiz!"
@@ -95,6 +92,16 @@ DEGILSE
 SON_EGER
 
 genel_toplam = toplam_tutar + kargo_ucreti
+
+
+// 7. Minimum Tutar Kontrolü (KOŞUL)
+// Minimum 50 TL kuralı artık genel toplam (indirim + kargo dahil) üzerinden kontrol ediliyor
+EGER genel_toplam < 50 ISE
+    YAZ "Alışveriş tamamlanamıyor. Minimum 50 TL harcama gereklidir."
+    YAZ "Sepetinize ürün ekleyiniz veya başka ürün seçiniz."
+    BITIR
+SON_EGER
+
 YAZ "Genel Toplam: ", genel_toplam, " TL"
 
 
