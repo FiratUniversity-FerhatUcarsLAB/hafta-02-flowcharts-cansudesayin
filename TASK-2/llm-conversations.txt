@@ -1,0 +1,620 @@
+ChatGpt'ye Yazdığım: E-ticaret sitesinde sepet yönetimi ve ödeme sistemini adım adım açıkla. Kullanıcı girişi, ürün ekleme, stok kontrolü, indirim kodu, kargo hesaplama ve ödeme aşamalarını içermeli
+ChatGpt'nin verdiği cevap:
+Elbette — aşağıda bir e-ticaret sitesinde sepet yönetimi ve ödeme akışının mantığını, adım adım ve pratik kontrollerle birlikte özetledim. Her adımda gerekli doğrulamaları, hata/edge-case durumlarını ve önerilen uygulama notlarını da bulacaksın.
+
+1) Kullanıcı girişi / kimlik doğrulama
+
+Kullanıcı “Giriş yap” veya “Misafir/Devam et” seçer.
+Girişte e-posta + parola / sosyal giriş / OTP doğrulaması kullan.
+Başarılıysa kullanıcı oturumu (session / JWT) oluştur; başarısız 5 deneme → geçici kilitleme.
+Oturum doğrulaması yoksa sepet geçici cihaz/cookie-bazlı saklanır (anonim sepet).
+Not: Parola ve kimlik bilgileri güvenli şekilde (hash, TLS) saklanmalı.
+
+2) Ürün gösterimi ve “Sepete ekle”
+
+Kullanıcı ürün sayfasında “Adet” seçer ve “Sepete ekle” butonuna basar.
+Backend: istek alındığında stok rezervasyonu veya anlık stok kontrolü yap:
+Eğer stok ≥ istenen adet → başarılı, sepete ekle; gerekirse kısa süreli reservation (örn. 10–15 dk) oluştur.
+Değilse → kullanıcıya hata/uyarı göster (kalan stok, ön sipariş seçeneği).
+Sepet modelinde her öğe: product_id, seçilen_variant, adet, birim_fiyat, geçici_indirim, rezervasyon_zamani.
+Not: Rezervasyon yerine anlık düşme stratejisi de var (checkout sırasında kesin azaltma) — yüksek trafikte rezervasyon önerilir.
+
+3) Sepet yönetimi (güncelleme, silme, totaller)
+
+Sepet görüntülendiğinde her öğe için fiyat, stok durumu ve tahmini teslim bilgisi göster.
+Kullanıcı adet değiştirirse → tekrar stok kontrolü yapılır; adet artıyorsa rezervasyon/uyarı.
+Ara toplam (subtotal), uygulanmış indirimler, tahmini kargo ve vergiler canlı hesaplanır.
+Sepetin “zaman aşımı” politikasını göster (rezervasyon varsa süresi).
+
+4) İndirim kodu (promo) uygulama
+
+Kullanıcı indirim kodu girer → backend doğrular:
+Kod geçerli mi, süresi doldu mu, kullanım limiti aşıldı mı, kullanıcı/ürün/kategori kısıtı var mı?
+Eğer kod “sepet bazlı” ise koşulları vs. kontrol et (min tutar, hariç ürünler).
+Geçerliyse: indirim türüne göre toplamı düşür (yüzde, sabit tutar, gönderim indirimi).
+Kod geçersizse net hata mesajı (neden — süre, limit, uygun değil vb.).
+Uygulanan indirim kaydedilir (audit log) — iade/iptal durumları için.
+
+5) Kargo hesaplama
+
+Kullanıcı adres girer veya seçer; kargo bölgesi, hız, taşıyıcı seçimi belirlenir.
+Kargo fiyatı hesaplama yöntemleri:
+Sabit ücret, ağırlık tabanlı, hacim tabanlı veya satıcı bazlı (marketplace).
+Kargo seçenekleri listelenir (ücretsiz kargo eşiği varsa bunu göster).
+Seçilen kargoya göre teslim zamanı tahmini göster ve ücret sepet toplamına eklenir.
+Vergi hesaplama (KDV vs.) adres/ülkeye göre uygulanır.
+
+6) Checkout (ödeme öncesi doğrulamalar)
+
+Sipariş özeti gösterilir: ürünler, adet, birim fiyat, indirimler, kargo, vergiler, toplam tutar.
+Stok kesinleştirme (atomik işlem): Checkout başında ürünlerde halen yeterli stok varsa stok rezervasyonu → kesin azaltma adımı; değilse kullanıcı uyarılır.
+Sipariş numarası (geçici) oluşturulur; ödeme başarılıysa kalıcı sipariş olarak kaydedilecek.
+Müştiriye ödeme yöntemleri gösterilir (kart, havale, Cüzdan, Kapıda ödeme vb.).
+Not: Bu adımda transaction/locking ve idempotency (aynı ödeme isteğinin iki kez işlenmemesi) önemlidir.
+
+7) Ödeme işlemi
+
+Kullanıcı ödeme yöntemini seçer; gerekli bilgiler alınır (kart numarası, CVV, vade, vs.).
+Kart ödemesi için ödeme sağlayıcı (PSP) entegrasyonu:
+İstek oluştur (tutar, sipariş_id, callback_url), SSL/TLS, PCI-DSS kurallarına uy.
+3D Secure / OTP gerekiyorsa yönlendir ve sonucu bekle.
+
+PSP’den dönüş:
+Başarılı → ödeme onay, siparişi “ödendi” olarak güncelle, stok düşürme kesinleştirilir, fatura/fiş üretilir.
+Hata → hata mesajı göster, kullanıcı tekrar denemek veya farklı yöntem seçmek isterse seçenek sun.
+Webhook: PSP tarafından gönderilen ödeme bildirimi (asenkron) güvenli şekilde doğrulanmalı ve sipariş durumu güncellenmeli.
+Not: Ödemede başarısızlıkların yönetimi (rollback): rezervasyon geri verilir, rezervasyon süresi sonlandırılır.
+
+8) Sipariş onayı ve post-payment işlemleri
+
+Ödeme onayı → e-posta / SMS ile sipariş onayı gönder.
+Depo/lojistik sistemine sipariş gönderilir (picking list, paketleme).
+Kargo takip numarası oluştuğunda kullanıcıya bildirim gönder.
+İade/iptal politikaları ve iade etiketleri sağlanır.
+
+9) Hata ve edge-case yönetimi
+Stok yarış durumları: optimistic locking + rezervasyon süresi.
+Double-submit (iki kere ödeme): idempotency key kullan.
+İndirim suiistimali: promo kullanım logları ve fraud kuralları.
+Ödeme PSP kesintileri: fallback (farklı PSP), kullanıcının siparişi saklanır ve bilgilendirilir.
+
+İnternet/timeout: kullanıcı geri döndüğünde sipariş durumu kontrolü ve tekrar yönlendirme.
+İstersen bu akışı alıp detaylı pseudocode (BAŞLA/OKU/YAZ/EĞER/DÖNGÜ ile) veya veritabanı şeması ve REST endpoint listesi hâline getireyim. Hangi formatı istersin?
+
+ChatGpt'ye Yazdığım: "Bu sistemi pseudocode olarak yaz. Döngüler için DÖNGÜ, koşullar için EGER- ISE kullan. Her adımı BASLA ile baslat, BITIR ile bitir. Tum kontrol noktalarını belirt.
+Sistem Gereksinimleri: Kullanıcı giris kontrolu (kosul), Urun kategorileri arasında gezinme (dongu), Urun sepete ekleme Stok kontrolu (kosul), Sepeti goruntuleme ve duzenleme (dongu), Indirim kodu uygulanabilir (koşul), Minimum 50 TL kontrolu (koşul), Kargo ücreti hesaplama (koşul: 200 TL ¨ücretsiz) Odeme yontemi secimi (kosul) Siparis onayı."
+ChatGpt'nin Buna cevabı:
+Harika, verdiğin sistem gereksinimlerine göre aşağıda tam olarak bu koşul ve döngüleri içeren sade, ama adım adım ilerleyen bir E-ticaret Sepet Yönetimi ve Ödeme Sistemi Pseudocode hazırladım.
+Tüm noktalar (koşul, döngü, işlem, kullanıcı girişi, stok kontrolü, indirim, kargo, ödeme, sipariş onayı) eksiksiz biçimde yer alıyor ✅
+
+🛍️ E-TİCARET SİSTEMİ PSEUDOCODE
+BASLA
+
+// 1. Kullanıcı Girişi Kontrolü
+YAZ "E-ticaret sistemine hoş geldiniz."
+YAZ "Lütfen kullanıcı adı ve şifre giriniz."
+OKU kullanici_adi, sifre
+
+EGER dogrula_kullanici(kullanici_adi, sifre) = DOGRU ISE
+    YAZ "Giriş başarılı. Hoş geldiniz, " + kullanici_adi
+DEGILSE
+    YAZ "Giriş başarısız. Misafir olarak devam ediliyor."
+SON_EGER
+
+
+// 2. Ürün Kategorileri Arasında Gezinme (DÖNGÜ)
+kategori_secimi = "EVET"
+DÖNGÜ kategori_secimi = "EVET" İKEN
+    YAZ "Lütfen bir kategori seçiniz: (1) Elektronik (2) Giyim (3) Ev (4) Spor"
+    OKU kategori
+
+    YAZ "Seçilen kategorideki ürünler listeleniyor..."
+    YAZ "Ürün ID'si ve adetini giriniz."
+    OKU urun_id, adet
+
+    // 3. Stok Kontrolü
+    EGER stok_kontrol(urun_id, adet) = DOGRU ISE
+        sepet.EKLE(urun_id, adet)
+        YAZ "Ürün sepete eklendi."
+    DEGILSE
+        YAZ "Yetersiz stok. Lütfen daha düşük adet seçiniz."
+    SON_EGER
+
+    YAZ "Başka kategoriye bakmak ister misiniz? (EVET/HAYIR)"
+    OKU kategori_secimi
+SON_DÖNGÜ
+
+
+// 4. Sepeti Görüntüleme ve Düzenleme (DÖNGÜ)
+YAZ "Sepetinizdeki ürünler:"
+YAZ sepet.LISTELE()
+
+duzenleme = "EVET"
+DÖNGÜ duzenleme = "EVET" İKEN
+    YAZ "Ürün silmek veya adet değiştirmek ister misiniz? (EVET/HAYIR)"
+    OKU duzenleme
+    EGER duzenleme = "EVET" ISE
+        OKU urun_id, yeni_adet
+        EGER stok_kontrol(urun_id, yeni_adet) = DOGRU ISE
+            sepet.GUNCELLE(urun_id, yeni_adet)
+            YAZ "Sepet güncellendi."
+        DEGILSE
+            YAZ "Yetersiz stok."
+        SON_EGER
+    SON_EGER
+SON_DÖNGÜ
+
+
+// 5. İndirim Kodu Uygulama (KOŞUL)
+YAZ "İndirim kodunuz varsa giriniz, yoksa 'YOK' yazınız."
+OKU indirim_kodu
+
+EGER indirim_kodu != "YOK" ISE
+    EGER indirim_kontrol(indirim_kodu) = DOGRU ISE
+        sepet.INDIRIM_UYGULA(indirim_kodu)
+        YAZ "İndirim kodu başarıyla uygulandı."
+    DEGILSE
+        YAZ "Geçersiz indirim kodu."
+    SON_EGER
+SON_EGER
+
+
+// 6. Minimum Tutar Kontrolü (KOŞUL)
+toplam_tutar = sepet.TOPLAM()
+EGER toplam_tutar < 50 ISE
+    YAZ "Alışveriş tamamlanamıyor. Minimum 50 TL harcama gereklidir."
+    YAZ "Sepetinize ürün ekleyiniz."
+    BITIR
+SON_EGER
+
+
+// 7. Kargo Ücreti Hesaplama (KOŞUL: 200 TL Üzeri Ücretsiz)
+EGER toplam_tutar >= 200 ISE
+    kargo_ucreti = 0
+    YAZ "Kargonuz ücretsiz!"
+DEGILSE
+    kargo_ucreti = 30
+    YAZ "Kargo ücreti: 30 TL"
+SON_EGER
+
+genel_toplam = toplam_tutar + kargo_ucreti
+YAZ "Genel Toplam: ", genel_toplam, " TL"
+
+
+// 8. Ödeme Yöntemi Seçimi (KOŞUL)
+YAZ "Ödeme yöntemini seçiniz: (1) Kart (2) Kapıda Ödeme"
+OKU odeme_tipi
+
+EGER odeme_tipi = 1 ISE
+    YAZ "Kart bilgilerinizi giriniz:"
+    OKU kart_no, son_kullanma, cvv
+    EGER odeme_kontrol(kart_no, son_kullanma, cvv, genel_toplam) = DOGRU ISE
+        YAZ "Ödeme başarılı."
+    DEGILSE
+        YAZ "Ödeme reddedildi. İşlem iptal edildi."
+        BITIR
+    SON_EGER
+
+DEGILSE EGER odeme_tipi = 2 ISE
+    YAZ "Kapıda ödeme seçildi. Ödeme teslimatta yapılacaktır."
+SON_EGER
+
+
+// 9. Sipariş Onayı
+YAZ "Siparişiniz başarıyla oluşturuldu!"
+YAZ "Sipariş numaranız: " + rastgele_siparis_no()
+YAZ "Tahmini teslim süresi: 3-5 iş günü"
+YAZ "Teşekkür ederiz!"
+
+BITIR
+İstersen bu pseudocode’un akış diyagramını (flowchart) da senin için Graphviz DOT biçiminde veya görsel olarak çizebilirim — hangisini istersin?
+
+ChatGpt'ye Yazdığım: "indirim kodu için iki farklı seçenek yapabilir miyiz mesela kullanma tarihi geçtiyse "bu kodun kullanım tarihi geçmiştir" yazsın eğer geçersizse "bu kod geçersizdir" yazsın bu şekilde koda ekleme yapar mısın?"
+burada online alışveriş sitelerinde olduğu gibi indirim girince aldığımız çıktıları genişletmek istedim.
+ChatGpt'nin buna cevabı: 
+Tabii! Önceki tam e-ticaret pseudocode’unu, indirim kodu kontrolünü iki farklı mesaj verecek şekilde güncelledim.
+Diğer adımlar tamamen aynı, sadece 5. adım değişti.
+
+🛍️ GÜNCELLENMİŞ E-TİCARET SİSTEMİ PSEUDOCODE
+BASLA
+
+// 1. Kullanıcı Girişi Kontrolü
+YAZ "E-ticaret sistemine hoş geldiniz."
+YAZ "Lütfen kullanıcı adı ve şifre giriniz."
+OKU kullanici_adi, sifre
+
+EGER dogrula_kullanici(kullanici_adi, sifre) = DOGRU ISE
+    YAZ "Giriş başarılı. Hoş geldiniz, " + kullanici_adi
+DEGILSE
+    YAZ "Giriş başarısız. Misafir olarak devam ediliyor."
+SON_EGER
+
+
+// 2. Ürün Kategorileri Arasında Gezinme (DÖNGÜ)
+kategori_secimi = "EVET"
+DÖNGÜ kategori_secimi = "EVET" İKEN
+    YAZ "Lütfen bir kategori seçiniz: (1) Elektronik (2) Giyim (3) Ev (4) Spor"
+    OKU kategori
+
+    YAZ "Seçilen kategorideki ürünler listeleniyor..."
+    YAZ "Ürün ID'si ve adetini giriniz."
+    OKU urun_id, adet
+
+    // 3. Stok Kontrolü
+    EGER stok_kontrol(urun_id, adet) = DOGRU ISE
+        sepet.EKLE(urun_id, adet)
+        YAZ "Ürün sepete eklendi."
+    DEGILSE
+        YAZ "Yetersiz stok. Lütfen daha düşük adet seçiniz."
+    SON_EGER
+
+    YAZ "Başka kategoriye bakmak ister misiniz? (EVET/HAYIR)"
+    OKU kategori_secimi
+SON_DÖNGÜ
+
+
+// 4. Sepeti Görüntüleme ve Düzenleme (DÖNGÜ)
+YAZ "Sepetinizdeki ürünler:"
+YAZ sepet.LISTELE()
+
+duzenleme = "EVET"
+DÖNGÜ duzenleme = "EVET" İKEN
+    YAZ "Ürün silmek veya adet değiştirmek ister misiniz? (EVET/HAYIR)"
+    OKU duzenleme
+    EGER duzenleme = "EVET" ISE
+        OKU urun_id, yeni_adet
+        EGER stok_kontrol(urun_id, yeni_adet) = DOGRU ISE
+            sepet.GUNCELLE(urun_id, yeni_adet)
+            YAZ "Sepet güncellendi."
+        DEGILSE
+            YAZ "Yetersiz stok."
+        SON_EGER
+    SON_EGER
+SON_DÖNGÜ
+
+
+// 5. İndirim Kodu Uygulama (GÜNCELLENMİŞ)
+YAZ "İndirim kodunuz varsa giriniz, yoksa 'YOK' yazınız."
+OKU indirim_kodu
+
+EGER indirim_kodu != "YOK" ISE
+    KOD_DURUMU = indirim_kontrol(indirim_kodu) // "GECERLI", "GECERSIZ", "SURE_BITMIS"
+
+    EGER KOD_DURUMU = "GECERLI" ISE
+        sepet.INDIRIM_UYGULA(indirim_kodu)
+        YAZ "İndirim kodu başarıyla uygulandı."
+
+    DEGILSE EGER KOD_DURUMU = "SURE_BITMIS" ISE
+        YAZ "Bu kodun kullanım tarihi geçmiştir."
+
+    DEGILSE EGER KOD_DURUMU = "GECERSIZ" ISE
+        YAZ "Bu kod geçersizdir."
+
+    SON_EGER
+SON_EGER
+
+
+// 6. Minimum Tutar Kontrolü (KOŞUL)
+toplam_tutar = sepet.TOPLAM()
+EGER toplam_tutar < 50 ISE
+    YAZ "Alışveriş tamamlanamıyor. Minimum 50 TL harcama gereklidir."
+    YAZ "Sepetinize ürün ekleyiniz."
+    BITIR
+SON_EGER
+
+
+// 7. Kargo Ücreti Hesaplama (KOŞUL: 200 TL Üzeri Ücretsiz)
+EGER toplam_tutar >= 200 ISE
+    kargo_ucreti = 0
+    YAZ "Kargonuz ücretsiz!"
+DEGILSE
+    kargo_ucreti = 30
+    YAZ "Kargo ücreti: 30 TL"
+SON_EGER
+
+genel_toplam = toplam_tutar + kargo_ucreti
+YAZ "Genel Toplam: ", genel_toplam, " TL"
+
+
+// 8. Ödeme Yöntemi Seçimi (KOŞUL)
+YAZ "Ödeme yöntemini seçiniz: (1) Kart (2) Kapıda Ödeme"
+OKU odeme_tipi
+
+EGER odeme_tipi = 1 ISE
+    YAZ "Kart bilgilerinizi giriniz:"
+    OKU kart_no, son_kullanma, cvv
+    EGER odeme_kontrol(kart_no, son_kullanma, cvv, genel_toplam) = DOGRU ISE
+        YAZ "Ödeme başarılı."
+    DEGILSE
+        YAZ "Ödeme reddedildi. İşlem iptal edildi."
+        BITIR
+    SON_EGER
+
+DEGILSE EGER odeme_tipi = 2 ISE
+    YAZ "Kapıda ödeme seçildi. Ödeme teslimatta yapılacaktır."
+SON_EGER
+
+
+// 9. Sipariş Onayı
+YAZ "Siparişiniz başarıyla oluşturuldu!"
+YAZ "Sipariş numaranız: " + rastgele_siparis_no()
+YAZ "Tahmini teslim süresi: 3-5 iş günü"
+YAZ "Teşekkür ederiz!"
+
+BITIR
+İstersen bir sonraki adımda bu tam pseudocode’u flowchart (akış diyagramı) hâline de çevirebilirim, böylece ödevde hem kod hem görsel hazır olur.
+Bunu yapmamı ister misin?
+
+ChatGpt'ye yazdığım:"peki indirimi sadece belirli bir sepet tutarının üzerine uygulasak olur mu? yani öyle bir tutar seçelim ki indirim uygulandığında kargo fiyatı eklenmiş haliyle 50tl'nin altında kalıyorsa hata vermesin"
+Burada düzeltmeseydim ve kullanıcı 50tl bir ürün aldığında %70 bir indirim yapmış olsaydı kargo tutarı ile birlikte bu ürün 50tl'nin altında kalacaktı ve o zaman sistem hata verecekti, bunu engellemek için indirimi de e-ticaret sitelerinde olduğu gibi sadece belirli bir tutar üzerine uygulamak istedim.
+ChatGpt'nin verdiği cevap:
+Üstteki tam pseudocode’u alıp indirim kodu adımını ve minimum harcama adımını bu mantığa göre güncelleyelim; böylece indirim sadece belirli tutarlarda geçerli olur ve kargo dahil toplam 50 TL altına düşerse hata vermez.
+
+Aşağıda tam entegre edilmiş ve güncellenmiş sürüm var:
+
+🛒 GÜNCELLENMİŞ E-TİCARET PSEUDOCODE (İndirim Tutar Sınırı Dahil)
+BASLA
+
+// 1. Kullanıcı Girişi Kontrolü
+YAZ "E-ticaret sistemine hoş geldiniz."
+YAZ "Lütfen kullanıcı adı ve şifre giriniz."
+OKU kullanici_adi, sifre
+
+EGER dogrula_kullanici(kullanici_adi, sifre) = DOGRU ISE
+    YAZ "Giriş başarılı. Hoş geldiniz, " + kullanici_adi
+DEGILSE
+    YAZ "Giriş başarısız. Misafir olarak devam ediliyor."
+SON_EGER
+
+
+// 2. Ürün Kategorileri Arasında Gezinme (DÖNGÜ)
+kategori_secimi = "EVET"
+DÖNGÜ kategori_secimi = "EVET" İKEN
+    YAZ "Lütfen bir kategori seçiniz: (1) Elektronik (2) Giyim (3) Ev (4) Spor"
+    OKU kategori
+
+    YAZ "Seçilen kategorideki ürünler listeleniyor..."
+    YAZ "Ürün ID'si ve adetini giriniz."
+    OKU urun_id, adet
+
+    // 3. Stok Kontrolü
+    EGER stok_kontrol(urun_id, adet) = DOGRU ISE
+        sepet.EKLE(urun_id, adet)
+        YAZ "Ürün sepete eklendi."
+    DEGILSE
+        YAZ "Yetersiz stok. Lütfen daha düşük adet seçiniz."
+    SON_EGER
+
+    YAZ "Başka kategoriye bakmak ister misiniz? (EVET/HAYIR)"
+    OKU kategori_secimi
+SON_DÖNGÜ
+
+
+// 4. Sepeti Görüntüleme ve Düzenleme (DÖNGÜ)
+YAZ "Sepetinizdeki ürünler:"
+YAZ sepet.LISTELE()
+
+duzenleme = "EVET"
+DÖNGÜ duzenleme = "EVET" İKEN
+    YAZ "Ürün silmek veya adet değiştirmek ister misiniz? (EVET/HAYIR)"
+    OKU duzenleme
+    EGER duzenleme = "EVET" ISE
+        OKU urun_id, yeni_adet
+        EGER stok_kontrol(urun_id, yeni_adet) = DOGRU ISE
+            sepet.GUNCELLE(urun_id, yeni_adet)
+            YAZ "Sepet güncellendi."
+        DEGILSE
+            YAZ "Yetersiz stok."
+        SON_EGER
+    SON_EGER
+SON_DÖNGÜ
+
+
+// 5. İndirim Kodu Uygulama (KOŞUL VE TUTAR SINIRI)
+YAZ "İndirim kodunuz varsa giriniz, yoksa 'YOK' yazınız."
+OKU indirim_kodu
+
+EGER indirim_kodu != "YOK" ISE
+    EGER sepet.TOPLAM() >= 100 ISE  // İndirim sadece 100 TL ve üzeri
+        KOD_DURUMU = indirim_kontrol(indirim_kodu) // "GECERLI", "GECERSIZ", "SURE_BITMIS"
+
+        EGER KOD_DURUMU = "GECERLI" ISE
+            sepet.INDIRIM_UYGULA(indirim_kodu)
+            YAZ "İndirim kodu başarıyla uygulandı."
+
+        DEGILSE EGER KOD_DURUMU = "SURE_BITMIS" ISE
+            YAZ "Bu kodun kullanım tarihi geçmiştir."
+
+        DEGILSE EGER KOD_DURUMU = "GECERSIZ" ISE
+            YAZ "Bu kod geçersizdir."
+
+        SON_EGER
+
+    DEGILSE
+        YAZ "İndirim kodu sadece 100 TL ve üzeri alışverişlerde geçerlidir."
+    SON_EGER
+SON_EGER
+
+
+// 6. Kargo Ücreti Hesaplama (KOŞUL: 200 TL Üzeri Ücretsiz)
+toplam_tutar = sepet.TOPLAM()
+EGER toplam_tutar >= 200 ISE
+    kargo_ucreti = 0
+    YAZ "Kargonuz ücretsiz!"
+DEGILSE
+    kargo_ucreti = 30
+    YAZ "Kargo ücreti: 30 TL"
+SON_EGER
+
+genel_toplam = toplam_tutar + kargo_ucreti
+
+
+// 7. Minimum Tutar Kontrolü (KOŞUL)
+// Minimum 50 TL kuralı artık genel toplam (indirim + kargo dahil) üzerinden kontrol ediliyor
+EGER genel_toplam < 50 ISE
+    YAZ "Alışveriş tamamlanamıyor. Minimum 50 TL harcama gereklidir."
+    YAZ "Sepetinize ürün ekleyiniz veya başka ürün seçiniz."
+    BITIR
+SON_EGER
+
+YAZ "Genel Toplam: ", genel_toplam, " TL"
+
+
+// 8. Ödeme Yöntemi Seçimi (KOŞUL)
+YAZ "Ödeme yöntemini seçiniz: (1) Kart (2) Kapıda Ödeme"
+OKU odeme_tipi
+
+EGER odeme_tipi = 1 ISE
+    YAZ "Kart bilgilerinizi giriniz:"
+    OKU kart_no, son_kullanma, cvv
+    EGER odeme_kontrol(kart_no, son_kullanma, cvv, genel_toplam) = DOGRU ISE
+        YAZ "Ödeme başarılı."
+    DEGILSE
+        YAZ "Ödeme reddedildi. İşlem iptal edildi."
+        BITIR
+    SON_EGER
+
+DEGILSE EGER odeme_tipi = 2 ISE
+    YAZ "Kapıda ödeme seçildi. Ödeme teslimatta yapılacaktır."
+SON_EGER
+
+
+// 9. Sipariş Onayı
+YAZ "Siparişiniz başarıyla oluşturuldu!"
+YAZ "Sipariş numaranız: " + rastgele_siparis_no()
+YAZ "Tahmini teslim süresi: 3-5 iş günü"
+YAZ "Teşekkür ederiz!"
+
+BITIR
+İstersen bir sonraki adımda bunu flowchart / akış diyagramı hâline getirip görsel olarak da ödev için hazır hale getirebilirim.
+Bunu yapayım mı?
+
+ChatGpt'ye yazdığım: "Pseudocode’u Graphviz DOT formatına cevir. rankdir=TB kullan. Karar noktalarında EVET/HAYIR etiketlerini unutma."
+ChatGpt'nin verdiği cevap:
+Tamam! Aşağıda verdiğimiz güncellenmiş e-ticaret pseudocode’unun Graphviz DOT formatı hâli var.
+
+rankdir=TB ile üstten alta akış sağlandı.
+Oval: Başla/Bitir
+Paralelkenar: Girdi/Çıktı
+Dikdörtgen (box): İşlem
+Elmas (diamond): Karar noktaları
+Kenarlarda EVET/HAYIR etiketleri eklendi.
+
+digraph E_Ticaret {
+    rankdir=TB;
+    node [shape=box];
+
+    // Başlangıç
+    BASLA [label="BASLA", shape=oval];
+
+    // Kullanıcı Girişi
+    KULLANICI_GIRIS [label="Kullanıcı adı ve şifre oku", shape=parallelogram];
+    GIRIS_DOGRULAMA [label="Giriş bilgilerini doğrula", shape=diamond];
+
+    // Giriş başarılı veya misafir
+    GIRIS_DOGRU [label="Giriş başarılı", shape=box];
+    GIRIS_YANLIS [label="Misafir olarak devam", shape=box];
+
+    // Ürün Kategorileri Döngüsü
+    KATEGORI_SECIM [label="Kategori seç", shape=parallelogram];
+    DONGU_KATEGORI [label="Başka kategori bakmak ister mi?", shape=diamond];
+
+    // Ürün ekleme ve stok kontrol
+    URUN_EKLE [label="Ürün ID ve adet gir", shape=parallelogram];
+    STOK_KONTROL [label="Stok yeterli mi?", shape=diamond];
+    URUN_SEPETE_EKLE [label="Ürünü sepete ekle", shape=box];
+    STOK_YETERSIZ [label="Yetersiz stok", shape=box];
+
+    // Sepeti Görüntüleme ve Düzenleme
+    SEPET_GORUNTULE [label="Sepeti görüntüle", shape=box];
+    DUZENLEME_DONGU [label="Ürün sil veya adet değiştir?", shape=diamond];
+    SEPET_GUNCELLE [label="Sepeti güncelle", shape=box];
+
+    // İndirim Kodu
+    INDIRIM_KODU [label="İndirim kodu oku", shape=parallelogram];
+    TUTAR_SINIRI [label="Sepet >=100 TL?", shape=diamond];
+    KOD_DURUMU [label="Kod durumu: Geçerli / Süre Bitmiş / Geçersiz", shape=diamond];
+    INDIRIM_UYGULA [label="İndirim uygulandı", shape=box];
+    KOD_SURE_BITMIS [label="Kullanım tarihi geçmiş", shape=box];
+    KOD_GECERSIZ [label="Kod geçersiz", shape=box];
+    TUTAR_KUCUK [label="İndirim sadece 100 TL ve üzeri", shape=box];
+
+    // Kargo Hesaplama
+    KARGO_HESAPLA [label="Kargo ücreti hesapla (>=200 TL ücretsiz)", shape=diamond];
+    KARGO_UCRETI_0 [label="Kargo ücretsiz", shape=box];
+    KARGO_UCRETI_30 [label="Kargo 30 TL", shape=box];
+
+    // Minimum Tutar Kontrolü
+    MINIMUM_TUTAR [label="Genel toplam >= 50 TL?", shape=diamond];
+    TUTAR_YETERSIZ [label="Hata: Minimum 50 TL", shape=box];
+
+    // Ödeme Yöntemi
+    ODEME_TIPI [label="Ödeme yöntemi seç", shape=diamond];
+    KART_BILGI [label="Kart bilgilerini gir", shape=parallelogram];
+    ODEME_KONTROL [label="Ödeme başarılı mı?", shape=diamond];
+    ODEME_BASARILI [label="Ödeme başarılı", shape=box];
+    ODEME_RED [label="Ödeme reddedildi, iptal", shape=box];
+    KAPIDA_ODEME [label="Kapıda ödeme seçildi", shape=box];
+
+    // Sipariş Onayı
+    SIPARIS_ONAY [label="Sipariş oluşturuldu, numara ve tahmini teslim", shape=box];
+
+    // Bitir
+    BITIR [label="BITIR", shape=oval];
+
+    // Kenar Bağlantıları
+
+    BASLA -> KULLANICI_GIRIS;
+    KULLANICI_GIRIS -> GIRIS_DOGRULAMA;
+    GIRIS_DOGRULAMA -> GIRIS_DOGRU [label="EVET"];
+    GIRIS_DOGRULAMA -> GIRIS_YANLIS [label="HAYIR"];
+
+    GIRIS_DOGRU -> KATEGORI_SECIM;
+    GIRIS_YANLIS -> KATEGORI_SECIM;
+
+    KATEGORI_SECIM -> URUN_EKLE;
+    URUN_EKLE -> STOK_KONTROL;
+    STOK_KONTROL -> URUN_SEPETE_EKLE [label="EVET"];
+    STOK_KONTROL -> STOK_YETERSIZ [label="HAYIR"];
+    URUN_SEPETE_EKLE -> DONGU_KATEGORI;
+    STOK_YETERSIZ -> DONGU_KATEGORI;
+    DONGU_KATEGORI -> KATEGORI_SECIM [label="EVET"];
+    DONGU_KATEGORI -> SEPET_GORUNTULE [label="HAYIR"];
+
+    SEPET_GORUNTULE -> DUZENLEME_DONGU;
+    DUZENLEME_DONGU -> SEPET_GUNCELLE [label="EVET"];
+    DUZENLEME_DONGU -> INDIRIM_KODU [label="HAYIR"];
+    SEPET_GUNCELLE -> DUZENLEME_DONGU;
+
+    INDIRIM_KODU -> TUTAR_SINIRI;
+    TUTAR_SINIRI -> KOD_DURUMU [label="EVET"];
+    TUTAR_SINIRI -> TUTAR_KUCUK [label="HAYIR"];
+    KOD_DURUMU -> INDIRIM_UYGULA [label="GEÇERLİ"];
+    KOD_DURUMU -> KOD_SURE_BITMIS [label="SÜRE BİTMİŞ"];
+    KOD_DURUMU -> KOD_GECERSIZ [label="GEÇERSİZ"];
+    INDIRIM_UYGULA -> KARGO_HESAPLA;
+    KOD_SURE_BITMIS -> KARGO_HESAPLA;
+    KOD_GECERSIZ -> KARGO_HESAPLA;
+    TUTAR_KUCUK -> KARGO_HESAPLA;
+
+    KARGO_HESAPLA -> KARGO_UCRETI_0 [label="EVET"];
+    KARGO_HESAPLA -> KARGO_UCRETI_30 [label="HAYIR"];
+    KARGO_UCRETI_0 -> MINIMUM_TUTAR;
+    KARGO_UCRETI_30 -> MINIMUM_TUTAR;
+
+    MINIMUM_TUTAR -> SIPARIS_ONAY [label="EVET"];
+    MINIMUM_TUTAR -> TUTAR_YETERSIZ [label="HAYIR"];
+    TUTAR_YETERSIZ -> BITIR;
+
+    SIPARIS_ONAY -> ODEME_TIPI;
+    ODEME_TIPI -> KART_BILGI [label="Kart"];
+    ODEME_TIPI -> KAPIDA_ODEME [label="Kapıda Ödeme"];
+
+    KART_BILGI -> ODEME_KONTROL;
+    ODEME_KONTROL -> ODEME_BASARILI [label="EVET"];
+    ODEME_KONTROL -> ODEME_RED [label="HAYIR"];
+
+    ODEME_BASARILI -> BITIR;
+    ODEME_RED -> BITIR;
+    KAPIDA_ODEME -> BITIR;
+}
