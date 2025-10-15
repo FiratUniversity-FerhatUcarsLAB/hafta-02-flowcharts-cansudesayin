@@ -1,0 +1,380 @@
+Gemini'ye yazdığım: "ATM para çekme sistemi için detaylı pseudocode yazmanı istiyorum.
+Şunları içermeli: PIN doğrulama (3 hak), bakiye kontrolü, tutar
+kontrolü (20 TL katları), günlük limit kontrolü, işlem tekrarı seçeneği. Tüm
+adımları BAŞLA, OKU, YAZ, EĞER-
+İSE, DÖNGÜ yapılarıyla yaz" 
+
+Gemini'nin Buna verdiği cevap:
+
+Harika bir istek! Bir ATM'den para çekme işlemi için detaylı bir pseudocode (sözde kod) aşağıdadır. 
+Talep ettiğiniz tüm adımları ve yapıları (BAŞLA, OKU, YAZ, EĞER-ISE, DÖNGÜ) içermektedir.
+
+BASLA
+
+  // SABİT DEĞERLER (Örnek veriler)
+  KULLANICI_PINI = 1234
+  HESAP_BAKIYESI = 5000.00
+  GUNLUK_LIMIT = 1000.00
+  CEKILEN_TOPLAM_BUGUN = 150.00 // Bugün çekilmiş miktar
+  PIN_DENEME_HAKKI = 3
+  CEKIM_TEKRAR_ET = DOGRU // İşlem tekrarı için başlangıç bayrağı
+  BLOKE_DURUMU = YANLIS
+
+  // ANA DÖNGÜ: İşlem Tekrarı Kontrolü
+  DONGU CEKIM_TEKRAR_ET EŞİT İSE DOGRU
+    
+    // ----------------------------------------------------------------------
+    // 1. PIN DOĞRULAMA DÖNGÜSÜ
+    // ----------------------------------------------------------------------
+    PIN_DOGRULANDI = YANLIS
+    GECICI_HAK = PIN_DENEME_HAKKI
+
+    DONGU GECICI_HAK > 0 VE PIN_DOGRULANDI EŞİT İSE YANLIS
+      YAZ "Lütfen PIN kodunuzu giriniz."
+      OKU GIRILEN_PIN
+
+      EĞER GIRILEN_PIN EŞİT İSE KULLANICI_PINI İSE
+        PIN_DOGRULANDI = DOGRU
+        YAZ "PIN doğru. Hoş geldiniz."
+      DEĞİLSE
+        GECICI_HAK = GECICI_HAK - 1
+        YAZ "Hatalı PIN. Kalan deneme hakkı: " + GECICI_HAK
+        
+        EĞER GECICI_HAK EŞİT İSE 0 İSE
+          BLOKE_DURUMU = DOGRU
+          YAZ "Çok sayıda hatalı deneme. Kartınız bloke edilmiştir."
+        EĞER-SONU
+      EĞER-SONU
+    DONGU-SONU
+
+    // ----------------------------------------------------------------------
+    // 2. BLOKE KONTROLÜ VE İŞLEM AKIŞI
+    // ----------------------------------------------------------------------
+    EĞER BLOKE_DURUMU EŞİT İSE DOGRU İSE
+      CEKIM_TEKRAR_ET = YANLIS // Bloke ise ana döngüden çık
+    DEĞİLSE EĞER PIN_DOGRULANDI EŞİT İSE DOGRU İSE
+      
+      // 2a. TUTAR GİRİŞİ
+      YAZ "Çekmek istediğiniz tutarı giriniz (20 TL'nin katları olmalıdır):"
+      OKU CEKILMEK_ISTENEN_TUTAR
+
+      // 2b. TUTAR KONTROLLERİ
+      // 2b.i. 20 TL Katı Kontrolü
+      EĞER CEKILMEK_ISTENEN_TUTAR MOD 20 EŞİT DEĞİL İSE 0 İSE
+        YAZ "Hata: Lütfen 20 TL'nin katları şeklinde bir tutar giriniz."
+      
+      DEĞİLSE
+        // 2b.ii. Günlük Limit Kontrolü
+        KALAN_GUNLUK_LIMIT = GUNLUK_LIMIT - CEKILEN_TOPLAM_BUGUN
+        
+        EĞER CEKILMEK_ISTENEN_TUTAR > KALAN_GUNLUK_LIMIT İSE
+          YAZ "Hata: Günlük çekim limitinizi aşıyorsunuz. Kalan limitiniz: " + KALAN_GUNLUK_LIMIT + " TL."
+        
+        DEĞİLSE
+          // 2b.iii. Bakiye Kontrolü
+          EĞER CEKILMEK_ISTENEN_TUTAR > HESAP_BAKIYESI İSE
+            YAZ "Hata: Hesap bakiyeniz yetersiz. Mevcut bakiyeniz: " + HESAP_BAKIYESI + " TL."
+          
+          DEĞİLSE
+            // 2b.iv. İŞLEM BAŞARILI
+            // Bakiye ve Günlük Toplam Güncelleme
+            HESAP_BAKIYESI = HESAP_BAKIYESI - CEKILMEK_ISTENEN_TUTAR
+            CEKILEN_TOPLAM_BUGUN = CEKILEN_TOPLAM_BUGUN + CEKILMEK_ISTENEN_TUTAR
+            
+            YAZ "İşlem başarılı. Lütfen paranızı alınız."
+            YAZ "Yeni Bakiye: " + HESAP_BAKIYESI + " TL."
+            YAZ "Bugün Çekilen Toplam: " + CEKILEN_TOPLAM_BUGUN + " TL."
+          EĞER-SONU // Bakiye Kontrolü Sonu
+        EĞER-SONU // Günlük Limit Kontrolü Sonu
+      EĞER-SONU // 20 TL Katı Kontrolü Sonu
+
+      // ----------------------------------------------------------------------
+      // 3. İŞLEM TEKRARI SEÇENEĞİ
+      // ----------------------------------------------------------------------
+      YAZ "Başka bir işlem yapmak ister misiniz? (E/H)"
+      OKU TEKRAR_SECIM
+
+      EĞER TEKRAR_SECIM EŞİT İSE "H" VEYA TEKRAR_SECIM EŞİT İSE "h" İSE
+        CEKIM_TEKRAR_ET = YANLIS
+      DEĞİLSE
+        YAZ "İşleme devam ediliyor..."
+      EĞER-SONU
+      
+    EĞER-SONU // PIN Doğrulandı Kontrolü Sonu
+
+  DONGU-SONU // Ana Döngü Sonu
+
+  YAZ "Bizi tercih ettiğiniz için teşekkür ederiz. İyi günler dileriz."
+
+BITIR  
+
+Gemini'ye yazdığım: "peki buna fiş verme işlemini de ekler misin"
+
+Gemini'nin Buna verdiği cevap:
+Elbette, ATM simülasyon kodunuzu, işlem sonunda bir işlem fişi verecek şekilde güncelleyebilirim.
+İşlem fişi için gerekli bilgileri toplayacak bir değişken yapısı ekleyeceğim ve başarılı işlem sonunda bu bilgileri yazdıracağım. 
+PIN doğrulama ve tekrar seçeneği gibi kısımlar değişmeyecek.
+
+İşte güncellenmiş kod:
+
+BASLA
+
+ // SABİT DEĞERLER (Örnek veriler)
+ KULLANICI_PINI = 1234
+ HESAP_BAKIYESI = 5000.00
+ GUNLUK_LIMIT = 1000.00
+ CEKILEN_TOPLAM_BUGUN = 150.00 // Bugün çekilmiş miktar
+ PIN_DENEME_HAKKI = 3
+ CEKIM_TEKRAR_ET = DOGRU // İşlem tekrarı için başlangıç bayrağı
+ BLOKE_DURUMU = YANLIS
+
+ // FİŞ BİLGİLERİ İÇİN DEĞİŞKENLER
+ ISLEM_TARIHI = "15/10/2025" // Örnek tarih
+ ISLEM_SAATI = "20:03" // Örnek saat
+ FIŞ_DURUMU = YANLIS // Fişin basılıp basılmayacağını kontrol eder
+
+ // ANA DÖNGÜ: İşlem Tekrarı Kontrolü
+ DONGU CEKIM_TEKRAR_ET EŞİT İSE DOGRU
+   
+   // ----------------------------------------------------------------------
+   // 1. PIN DOĞRULAMA DÖNGÜSÜ
+   // ----------------------------------------------------------------------
+   PIN_DOGRULANDI = YANLIS
+   GECICI_HAK = PIN_DENEME_HAKKI
+
+   DONGU GECICI_HAK > 0 VE PIN_DOGRULANDI EŞİT İSE YANLIS
+     YAZ "Lütfen PIN kodunuzu giriniz."
+     OKU GIRILEN_PIN
+
+     EĞER GIRILEN_PIN EŞİT İSE KULLANICI_PINI İSE
+       PIN_DOGRULANDI = DOGRU
+       YAZ "PIN doğru. Hoş geldiniz."
+     DEĞİLSE
+       GECICI_HAK = GECICI_HAK - 1
+       YAZ "Hatalı PIN. Kalan deneme hakkı: " + GECICI_HAK
+       
+       EĞER GECICI_HAK EŞİT İSE 0 İSE
+         BLOKE_DURUMU = DOGRU
+         YAZ "Çok sayıda hatalı deneme. Kartınız bloke edilmiştir."
+       EĞER-SONU
+     EĞER-SONU
+   DONGU-SONU
+
+   // ----------------------------------------------------------------------
+   // 2. BLOKE KONTROLÜ VE İŞLEM AKIŞI
+   // ----------------------------------------------------------------------
+   EĞER BLOKE_DURUMU EŞİT İSE DOGRU İSE
+     CEKIM_TEKRAR_ET = YANLIS // Bloke ise ana döngüden çık
+   DEĞİLSE EĞER PIN_DOGRULANDI EŞİT İSE DOGRU İSE
+     
+     // 2a. TUTAR GİRİŞİ
+     YAZ "Çekmek istediğiniz tutarı giriniz (20 TL'nin katları olmalıdır):"
+     OKU CEKILMEK_ISTENEN_TUTAR
+
+     // Fişin basılma durumunu her işlem başında sıfırla
+     FIŞ_DURUMU = YANLIS
+     
+     // 2b. TUTAR KONTROLLERİ
+     // 2b.i. 20 TL Katı Kontrolü
+     EĞER CEKILMEK_ISTENEN_TUTAR MOD 20 EŞİT DEĞİL İSE 0 İSE
+       YAZ "Hata: Lütfen 20 TL'nin katları şeklinde bir tutar giriniz."
+     
+     DEĞİLSE
+       // 2b.ii. Günlük Limit Kontrolü
+       KALAN_GUNLUK_LIMIT = GUNLUK_LIMIT - CEKILEN_TOPLAM_BUGUN
+       
+       EĞER CEKILMEK_ISTENEN_TUTAR > KALAN_GUNLUK_LIMIT İSE
+         YAZ "Hata: Günlük çekim limitinizi aşıyorsunuz. Kalan limitiniz: " + KALAN_GUNLUK_LIMIT + " TL."
+       
+       DEĞİLSE
+         // 2b.iii. Bakiye Kontrolü
+         EĞER CEKILMEK_ISTENEN_TUTAR > HESAP_BAKIYESI İSE
+           YAZ "Hata: Hesap bakiyeniz yetersiz. Mevcut bakiyeniz: " + HESAP_BAKIYESI + " TL."
+           
+         DEĞİLSE
+           // 2b.iv. İŞLEM BAŞARILI
+           // Bakiye ve Günlük Toplam Güncelleme
+           HESAP_BAKIYESI = HESAP_BAKIYESI - CEKILMEK_ISTENEN_TUTAR
+           CEKILEN_TOPLAM_BUGUN = CEKILEN_TOPLAM_BUGUN + CEKILMEK_ISTENEN_TUTAR
+           FIŞ_DURUMU = DOGRU // Fiş basılabilir
+           
+           YAZ "İşlem başarılı. Lütfen paranızı alınız."
+           YAZ "Yeni Bakiye: " + HESAP_BAKIYESI + " TL."
+           YAZ "Bugün Çekilen Toplam: " + CEKILEN_TOPLAM_BUGUN + " TL."
+         EĞER-SONU // Bakiye Kontrolü Sonu
+       EĞER-SONU // Günlük Limit Kontrolü Sonu
+     EĞER-SONU // 20 TL Katı Kontrolü Sonu
+
+     // ----------------------------------------------------------------------
+     // 3. İŞLEM FİŞİ BASIMI
+     // ----------------------------------------------------------------------
+     EĞER FIŞ_DURUMU EŞİT İSE DOGRU İSE
+       YAZ "----------------------------------------"
+       YAZ "           İŞLEM FİŞİ"
+       YAZ "----------------------------------------"
+       YAZ "İşlem Türü: Nakit Çekme"
+       YAZ "Tarih/Saat: " + ISLEM_TARIHI + " / " + ISLEM_SAATI
+       YAZ "Çekilen Tutar: " + CEKILMEK_ISTENEN_TUTAR + " TL"
+       YAZ "Yeni Bakiye: " + HESAP_BAKIYESI + " TL"
+       YAZ "Günlük Kalan Limit: " + (GUNLUK_LIMIT - CEKILEN_TOPLAM_BUGUN) + " TL"
+       YAZ "----------------------------------------"
+       YAZ "İşlem fişiniz hazırlanıyor..."
+     EĞER-SONU
+     
+     // ----------------------------------------------------------------------
+     // 4. İŞLEM TEKRARI SEÇENEĞİ
+     // ----------------------------------------------------------------------
+     YAZ "Başka bir işlem yapmak ister misiniz? (E/H)"
+     OKU TEKRAR_SECIM
+
+     EĞER TEKRAR_SECIM EŞİT İSE "H" VEYA TEKRAR_SECIM EŞİT İSE "h" İSE
+       CEKIM_TEKRAR_ET = YANLIS
+     DEĞİLSE
+       YAZ "İşleme devam ediliyor..."
+     EĞER-SONU
+     
+   EĞER-SONU // PIN Doğrulandı Kontrolü Sonu
+
+ DONGU-SONU // Ana Döngü Sonu
+
+ YAZ "Bizi tercih ettiğiniz için teşekkür ederiz. İyi günler dileriz."
+
+BITIR
+
+Yapılan Değişiklikler ve Açıklaması:
+
+Fiş Bilgisi Değişkenleri:
+ISLEM_TARIHI, ISLEM_SAATI: Fişte kullanılmak üzere örnek tarih ve saat bilgileri eklendi. (Gerçek bir sistemde bu, sistem saati ile dinamik olarak güncellenir.)
+FIŞ_DURUMU: İşlemin başarılı olup olmadığını ve fişin basılması gerekip gerekmediğini tutan bir bayrak (Başarılı işlem durumunda DOGRU yapılır).
+
+Fiş Basım Bloğu (Madde 3):
+İşlem başarıyla tamamlandıktan (yani bakiye ve günlük limit kontrolünden geçtikten) sonra FIŞ_DURUMU = DOGRU olarak ayarlanır.
+İşlem kontrolleri ve bakiye güncellemelerinden sonra yeni bir EĞER bloğu eklendi:
+
+EĞER FIŞ_DURUMU EŞİT İSE DOGRU İSE
+  // ... Fiş içeriği buraya yazdırılır ...
+EĞER-SONU
+Bu blok içinde, işlem türü, tarih/saat, çekilen tutar, yeni bakiye ve kalan günlük limit gibi detaylar yazdırılarak bir işlem fişi çıktısı simüle edilmiştir.
+
+Gemini'ye yazdığım: "peki eğer-sonu ile SON_EĞER arasında bir fark var mı" daha önceki kodları ChatGpt ile yaptığımda hep SON_EĞER şeklinde çıktı alıyordum, bir yanlışlık olmaması için emin olmak adına sormak istedim.
+Gemini'nin Buna verdiği cevap: 
+
+Pseudocode (sözde kod) yazımında EĞER-SONU ve SON_EĞER arasında işlevsel veya mantıksal bir fark yoktur.
+Her ikisi de, bir EĞER-ISE (IF-THEN) bloğunun, bir EĞER-ISE DEĞİLSE (IF-THEN-ELSE) bloğunun veya iç içe geçmiş bir EĞER yapısının bittiğini, yani koşullu kod yürütme alanının sona erdiğini belirtmek için kullanılan terimlerdir.
+
+Fark tamamen stil ve terminoloji tercihiyle ilgilidir:
+1.EĞER-SONU (veya SON_EĞER): Türkiye'de veya belirli akademik çevrelerde yaygın kullanılan Türkçe karşılıklardır.
+2.End If (İngilizce): Uluslararası pseudocode ve bazı programlama dillerinde (örneğin Visual Basic) standarttır.
+Önemli olan, bir pseudocode belgesi içinde tutarlılığı korumaktır. Yani bir pseudocode yazmaya EĞER-SONU ile başladıysanız, metnin tamamında aynı sonlandırma kalıbını kullanmalısınız.
+
+("Buradan sonra Geminiden istediğim DOT kodu Akış şemasında yeterince anlaşılır olmadığından ve düzelttirmeye çalıştırsam da karmaşıklığı çözemediği için Aynı kodu ChatGpt'ye yapıştırıp bu sefer DOT kodunu onun yazmasını istedim")
+ChatGpt'ye kodu ekledikten sonra yazdığım: "“Bu pseudocode’u Graphviz DOT diline çevir. Başla/Bitir için oval,
+girdi/cıktı için parallelogram, işlem için box, karar için diamond kullan.
+Tüm okları ve etiketleri ekle."
+ChatGpt'nin Cevabı:
+Mükemmel — bu pseudocode zaten oldukça iyi yapılandırılmış 👏
+Aşağıda, istediğin gibi Graphviz DOT biçiminde çevrilmiş hâlini bulacaksın:
+✅ Oval → BAŞLA / BİTİR
+✅ Parallelogram → Girdi / Çıktı (OKU, YAZ)
+✅ Kutu (box) → İşlem
+✅ Karo (diamond) → Karar (EĞER)
+✅ Her ok yönlendirilmiş ve etiketlenmiş durumda
+
+🎯 Graphviz DOT – ATM Para Çekme Akış Diyagramı
+digraph ATM {
+  rankdir=TB;
+  node [fontname="Arial", fontsize=10];
+
+  start [shape=oval, label="BAŞLA"];
+  vars [shape=box, label="Sabit değerleri ve değişkenleri tanımla"];
+  loop_start [shape=diamond, label="Çekim tekrarı = DOĞRU mu?"];
+  
+  // PIN doğrulama
+  pin_loop [shape=diamond, label="PIN doğrulandı mı?"];
+  read_pin [shape=parallelogram, label="PIN kodunu oku"];
+  check_pin [shape=diamond, label="PIN doğru mu?"];
+  correct_pin [shape=box, label="PIN doğru → PIN_DOGRULANDI = DOĞRU"];
+  wrong_pin [shape=box, label="Hatalı PIN → hak = hak - 1"];
+  remaining_try [shape=parallelogram, label="Kalan hak sayısını yaz"];
+  block_card [shape=box, label="Kart bloke edildi"];
+  blocked_exit [shape=oval, label="Kart bloke → BİTİR"];
+  
+  // Tutar girişi ve kontroller
+  amount_input [shape=parallelogram, label="Çekilecek tutarı oku"];
+  multiple_20 [shape=diamond, label="Tutar 20'nin katı mı?"];
+  invalid_20 [shape=parallelogram, label="Hata: 20 TL'nin katı olmalı"];
+  limit_check [shape=diamond, label="Tutar günlük limit içinde mi?"];
+  invalid_limit [shape=parallelogram, label="Hata: Limit aşıldı"];
+  balance_check [shape=diamond, label="Yeterli bakiye var mı?"];
+  invalid_balance [shape=parallelogram, label="Hata: Bakiye yetersiz"];
+  
+  // İşlem başarılı
+  withdraw [shape=box, label="Bakiye ve limitleri güncelle"];
+  success [shape=parallelogram, label="İşlem başarılı. Parayı ver"];
+  
+  // Fiş işlemi
+  receipt_check [shape=diamond, label="Fiş basılsın mı?"];
+  print_receipt [shape=parallelogram, label="İşlem fişini yazdır"];
+  
+  // Tekrar işlemi
+  repeat_check [shape=parallelogram, label="Başka işlem yapmak ister misiniz? (E/H)"];
+  repeat_decision [shape=diamond, label="Seçim = H mı?"];
+  end [shape=oval, label="BİTİR"];
+  
+  // --- Bağlantılar ---
+  start -> vars -> loop_start;
+  
+  loop_start -> pin_loop [label="Evet"];
+  loop_start -> end [label="Hayır"];
+  
+  pin_loop -> read_pin [label="Hayır"];
+  pin_loop -> amount_input [label="Evet"];
+  
+  read_pin -> check_pin;
+  check_pin -> correct_pin [label="Evet"];
+  check_pin -> wrong_pin [label="Hayır"];
+  wrong_pin -> remaining_try;
+  remaining_try -> check_pin [label="Hakkı varsa"];
+  wrong_pin -> block_card [label="Hak = 0"];
+  block_card -> blocked_exit;
+  
+  correct_pin -> amount_input;
+  
+  amount_input -> multiple_20;
+  multiple_20 -> invalid_20 [label="Hayır"];
+  multiple_20 -> limit_check [label="Evet"];
+  
+  limit_check -> invalid_limit [label="Hayır"];
+  limit_check -> balance_check [label="Evet"];
+  
+  balance_check -> invalid_balance [label="Hayır"];
+  balance_check -> withdraw [label="Evet"];
+  
+  withdraw -> success -> receipt_check;
+  receipt_check -> print_receipt [label="Evet"];
+  receipt_check -> repeat_check [label="Hayır"];
+  print_receipt -> repeat_check;
+  
+  repeat_check -> repeat_decision;
+  repeat_decision -> loop_start [label="Hayır (E)"];
+  repeat_decision -> end [label="Evet (H)"];
+}
+
+🧩 Nasıl kullanırsın:
+Yukarıdaki kodu bir .dot dosyasına kaydet (örneğin atm_algoritmasi.dot).
+
+Sonra terminalde şu komutu çalıştır:
+dot -Tpng atm_algoritmasi.dot -o atm_algoritmasi.png
+
+Ortaya çıkan görselde tüm karar, işlem, giriş/çıkış ve akış yönleri net şekilde görülecektir.
+
+İstersen ben bu diyagramın görsel hâlini (PNG veya SVG) de senin için oluşturup gösterebilirim.
+Hangisini istersin — PNG mi SVG mi?
+
+ChatGpt'ye yazdığım: "peki bu ATM'den para çekme simülasyonu hakkında 5-6 satırlık kısa bir açıklama yapar mısın"
+ChatGpt'nin buna cevabı: 
+Bu algoritma, ATM'den para çekme sürecini adım adım simüle eder.
+Kullanıcıdan PIN girişi alınır ve doğruluğu üç deneme hakkı içinde kontrol edilir.
+Doğru giriş yapıldığında, sistem bakiye ve günlük limit kontrolü yapar.
+Girilen tutarın 20 TL’nin katı olup olmadığı denetlenir.
+Tüm koşullar sağlanırsa işlem gerçekleşir ve kullanıcıya yeni işlem yapma seçeneği sunulur.
