@@ -1,0 +1,71 @@
+digraph HASTANE_SISTEMI {
+  rankdir=TB;
+  node [shape=box, style=rounded, fontname="Arial"];
+
+  // ===== ANA MENÜ =====
+  subgraph cluster_ana_menu {
+    label="ANA MENÜ";
+    color=lightblue;
+
+    basla [shape=oval, label="BASLA"];
+    kimlik [shape=parallelogram, label="TC Kimlik Numarasını Gir"];
+    dogrulama [shape=diamond, label="Kimlik Doğrulandı mı?"];
+    islem_sec [shape=diamond, label="İşlem Seçimi:\n1-Randevu Al\n2-Tahlil Sonucu Gör"];
+    bitir [shape=oval, label="BİTİR"];
+
+    basla -> kimlik -> dogrulama;
+    dogrulama -> bitir [label="HAYIR"];
+    dogrulama -> islem_sec [label="EVET"];
+  }
+
+  // ===== RANDEVU MODÜLÜ =====
+  subgraph cluster_randevu {
+    label="RANDEVU MODÜLÜ";
+    color=lightgreen;
+
+    poliklinik [shape=box, label="Poliklinik Seçimi"];
+    doktor [shape=box, label="Doktor Listesi Göster"];
+    saat [shape=box, label="Uygun Saatleri Göster"];
+    onay [shape=diamond, label="Randevu Onaylandı mı?"];
+    sms [shape=parallelogram, label="SMS Gönder"];
+    randevu_cikis [shape=box, label="Ana Menüye Dön"];
+
+    poliklinik -> doktor -> saat -> onay;
+    onay -> sms [label="EVET"];
+    onay -> randevu_cikis [label="HAYIR"];
+    sms -> randevu_cikis;
+  }
+
+  // ===== TAHLİL MODÜLÜ =====
+  subgraph cluster_tahlil {
+    label="TAHLİL MODÜLÜ";
+    color=lightcoral;
+
+    tahlil_var [shape=diamond, label="Tahlil Kaydı Var mı?"];
+    sonuc_hazir [shape=diamond, label="Sonuç Hazır mı?"];
+    goster [shape=box, label="Sonuçları Görüntüle"];
+    pdf_sec [shape=diamond, label="PDF İndirilsin mi?"];
+    pdf_indir [shape=box, label="PDF İndir"];
+    bekle [shape=box, label="Sonuç Hazır Değil\nBekleyiniz"];
+    tahlil_yok [shape=box, label="Tahlil Kaydı Bulunamadı"];
+    tahlil_cikis [shape=box, label="Ana Menüye Dön"];
+
+    tahlil_var -> sonuc_hazir [label="EVET"];
+    tahlil_var -> tahlil_yok [label="HAYIR"];
+    sonuc_hazir -> goster [label="EVET"];
+    sonuc_hazir -> bekle [label="HAYIR"];
+    goster -> pdf_sec;
+    pdf_sec -> pdf_indir [label="EVET"];
+    pdf_sec -> tahlil_cikis [label="HAYIR"];
+    pdf_indir -> tahlil_cikis;
+    tahlil_yok -> tahlil_cikis;
+    bekle -> tahlil_cikis;
+  }
+
+  // ===== MODÜLLER ARASI GEÇİŞLER =====
+  islem_sec -> poliklinik [label="1 - Randevu Al"];
+  islem_sec -> tahlil_var [label="2 - Tahlil Sonucu Gör"];
+  randevu_cikis -> islem_sec;
+  tahlil_cikis -> islem_sec;
+  bitir [shape=oval, label="SİSTEM SONU"];
+}
