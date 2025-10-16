@@ -210,7 +210,7 @@ BITIR
 İstersen bu pseudocode’un akış diyagramını (flowchart) da senin için Graphviz DOT biçiminde veya görsel olarak çizebilirim — hangisini istersin?
 
 ChatGpt'ye Yazdığım: "indirim kodu için iki farklı seçenek yapabilir miyiz mesela kullanma tarihi geçtiyse "bu kodun kullanım tarihi geçmiştir" yazsın eğer geçersizse "bu kod geçersizdir" yazsın bu şekilde koda ekleme yapar mısın?"
-burada online alışveriş sitelerinde olduğu gibi indirim girince aldığımız çıktıları genişletmek istedim.
+(burada online alışveriş sitelerinde olduğu gibi indirim girince aldığımız çıktıları genişletmek istedim.)
 ChatGpt'nin buna cevabı: 
 Tabii! Önceki tam e-ticaret pseudocode’unu, indirim kodu kontrolünü iki farklı mesaj verecek şekilde güncelledim.
 Diğer adımlar tamamen aynı, sadece 5. adım değişti.
@@ -346,7 +346,7 @@ BITIR
 Bunu yapmamı ister misin?
 
 ChatGpt'ye yazdığım:"peki indirimi sadece belirli bir sepet tutarının üzerine uygulasak olur mu? yani öyle bir tutar seçelim ki indirim uygulandığında kargo fiyatı eklenmiş haliyle 50tl'nin altında kalıyorsa hata vermesin"
-Burada düzeltmeseydim ve kullanıcı 50tl bir ürün aldığında %70 bir indirim yapmış olsaydı kargo tutarı ile birlikte bu ürün 50tl'nin altında kalacaktı ve o zaman sistem hata verecekti, bunu engellemek için indirimi de e-ticaret sitelerinde olduğu gibi sadece belirli bir tutar üzerine uygulamak istedim.
+(Burada düzeltmeseydim ve kullanıcı 50tl bir ürün aldığında %70 bir indirim yapmış olsaydı kargo tutarı ile birlikte bu ürün 50tl'nin altında kalacaktı ve o zaman sistem hata verecekti, bunu engellemek için indirimi de e-ticaret sitelerinde olduğu gibi sadece belirli bir tutar üzerine uygulamak istedim.)
 ChatGpt'nin verdiği cevap:
 Üstteki tam pseudocode’u alıp indirim kodu adımını ve minimum harcama adımını bu mantığa göre güncelleyelim; böylece indirim sadece belirli tutarlarda geçerli olur ve kargo dahil toplam 50 TL altına düşerse hata vermez.
 
