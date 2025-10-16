@@ -1,0 +1,96 @@
+digraph DersKayitSistemi {
+    rankdir=TB;
+    node [shape=rect, style=rounded, fontname="Arial"];
+
+    // Başlangıç ve bitiş
+    Start [label="Başla", shape=circle];
+    End [label="Bitiş", shape=doublecircle];
+
+    // Giriş aşaması
+    Giris [label="Öğrenci No + Şifre Al"];
+    KimlikKontrol [label="Kimlik Doğrulama?", shape=diamond];
+    GirisBasarili [label="Giriş Başarılı"];
+    GirisHatali [label="Hatalı Giriş\nProgram Sonlanır"];
+
+    // Ders listesi
+    DersListesi [label="Ders Listesini Göster"];
+    DersDongusu [label="Ders Ekle/Çıkar Seçimi", shape=diamond];
+
+    // Ders ekleme
+    DersEkle [label="Ders Ekleme Seçildi"];
+    DersCikar [label="Ders Çıkarma Seçildi"];
+    KayitOnay [label="Kayıt Onay Seçildi?", shape=diamond];
+
+    // Kontroller
+    Kontenjan [label="Kontenjan Dolu mu?", shape=diamond];
+    OnKosul [label="Ön Koşul Sağlandı mı?", shape=diamond];
+    ZamanCakis [label="Zaman Çakışması Var mı?", shape=diamond];
+    KrediLimiti [label="Toplam Kredi > 35?", shape=diamond];
+
+    // İşlem düğümleri
+    DersiEkle [label="Ders Ekle\nToplam Kredi Güncelle"];
+    DersiCikar [label="Dersi Sil\nToplam Kredi Güncelle"];
+    UyariKontenjan [label="Uyarı: Kontenjan Dolu"];
+    UyariOnKosul [label="Uyarı: Ön Koşul Eksik"];
+    UyariCakis [label="Uyarı: Zaman Çakışması"];
+    UyariKredi [label="Uyarı: Kredi Limiti Aşıldı"];
+
+    // Danışman ve onay
+    DanismanKontrol [label="GPA < 2.5 ?", shape=diamond];
+    DanismanOnay [label="Danışman Onayı Gerekli"];
+    DanismanYok [label="Onay Gerekmez"];
+    KayitOzeti [label="Kayıt Özeti Göster"];
+    Onaylama [label="Kayıt Onaylandı mı?", shape=diamond];
+    KayitTamam [label="Kayıt Tamamlandı"];
+    KayitIptal [label="Kayıt İptal Edildi"];
+
+    // Akış bağlantıları
+    Start -> Giris -> KimlikKontrol;
+    KimlikKontrol -> GirisBasarili [label="Evet"];
+    KimlikKontrol -> GirisHatali [label="Hayır"];
+    GirisHatali -> End;
+    GirisBasarili -> DersListesi -> DersDongusu;
+
+    DersDongusu -> DersEkle [label="1"];
+    DersDongusu -> DersCikar [label="2"];
+    DersDongusu -> KayitOnay [label="3"];
+
+    // Ders ekleme süreci
+    DersEkle -> Kontenjan;
+    Kontenjan -> UyariKontenjan [label="Evet"];
+    Kontenjan -> OnKosul [label="Hayır"];
+    UyariKontenjan -> DersDongusu;
+
+    OnKosul -> UyariOnKosul [label="Hayır"];
+    OnKosul -> ZamanCakis [label="Evet"];
+    UyariOnKosul -> DersDongusu;
+
+    ZamanCakis -> UyariCakis [label="Evet"];
+    ZamanCakis -> KrediLimiti [label="Hayır"];
+    UyariCakis -> DersDongusu;
+
+    KrediLimiti -> UyariKredi [label="Evet"];
+    KrediLimiti -> DersiEkle [label="Hayır"];
+    UyariKredi -> DersDongusu;
+
+    DersiEkle -> DersDongusu;
+
+    // Ders çıkarma süreci
+    DersCikar -> DersiCikar -> DersDongusu;
+
+    // Kayıt onay süreci
+    KayitOnay -> DanismanKontrol [label="Evet"];
+    KayitOnay -> DersDongusu [label="Hayır"];
+
+    DanismanKontrol -> DanismanOnay [label="Evet"];
+    DanismanKontrol -> DanismanYok [label="Hayır"];
+    DanismanOnay -> KayitOzeti;
+    DanismanYok -> KayitOzeti;
+
+    KayitOzeti -> Onaylama;
+    Onaylama -> KayitTamam [label="Evet"];
+    Onaylama -> KayitIptal [label="Hayır"];
+
+    KayitTamam -> End;
+    KayitIptal -> End;
+}
