@@ -1,0 +1,85 @@
+digraph IoT_Smart_Home {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial"];
+
+    // Başlangıç ve sistem aktif kontrolü
+    Start [label="Sistem Başlat"];
+    CheckActive [shape=diamond, label="Sistem aktif mi?"];
+
+    // Sensör kontrolleri
+    ReadMotion [label="Hareket Sensörü Oku"];
+    ReadDoor [label="Kapı Sensörü Oku"];
+    ReadWindow [label="Pencere Sensörü Oku"];
+    ActivateCamera [label="Kamera Aktif Et / Kayıt Başlat"];
+
+    // Tehdit sayısı kontrolü
+    ThreatCount [shape=diamond, label="Tehdit sayısı > 0?"];
+
+    // Yanlış alarm kontrolü
+    CheckOwner [shape=diamond, label="Ev sahibi evde mi?"];
+
+    // Alarm seviyesi belirleme
+    DetermineLevel [shape=diamond, label="Tehdit sayısına göre\nalarm seviyesi belirle"];
+    Alarm1 [label="Alarm Seviyesi 1 (düşük)"];
+    Alarm2 [label="Alarm Seviyesi 2 (orta)"];
+    Alarm3 [label="Alarm Seviyesi 3 (yüksek)"];
+
+    // Alarm ve bildirim
+    TriggerAlarm [label="Sesli Alarm Çal"];
+    SendNotify [label="Bildirim Gönder (SMS + App + Email)"];
+    FalseAlarm [label="Yanlış alarm – işlem yapılmadı"];
+    Normal [label="Her şey normal"];
+
+    // Alarm sıfırlama
+    ResetAlarm [shape=diamond, label="Alarmı sıfırlamak istiyor musunuz?"];
+    AlarmOff [label="Alarm kapandı"];
+    AlarmOn [label="Alarm açık durumda"];
+
+    // Bekleme ve döngü
+    Wait [label="Bekle (5 saniye)"];
+
+    End [label="Sistem Sonu"];
+
+    // ---------------------------
+    // Bağlantılar
+    // ---------------------------
+    Start -> CheckActive;
+    CheckActive -> End [label="Hayır"];
+    CheckActive -> ReadMotion [label="Evet"];
+
+    ReadMotion -> ReadDoor;
+    ReadDoor -> ReadWindow;
+    ReadWindow -> ActivateCamera;
+
+    ActivateCamera -> ThreatCount;
+
+    ThreatCount -> Normal [label="Hayır"];
+    ThreatCount -> CheckOwner [label="Evet"];
+
+    CheckOwner -> FalseAlarm [label="Evet"];
+    CheckOwner -> DetermineLevel [label="Hayır"];
+
+    DetermineLevel -> Alarm1 [label="1 tehdit"];
+    DetermineLevel -> Alarm2 [label="2 tehdit"];
+    DetermineLevel -> Alarm3 [label="≥3 tehdit"];
+
+    Alarm1 -> TriggerAlarm;
+    Alarm2 -> TriggerAlarm;
+    Alarm3 -> TriggerAlarm;
+
+    TriggerAlarm -> SendNotify;
+    SendNotify -> ResetAlarm;
+    FalseAlarm -> Wait;
+    Normal -> Wait;
+
+    ResetAlarm -> AlarmOff [label="Evet"];
+    ResetAlarm -> AlarmOn [label="Hayır"];
+
+    AlarmOff -> Wait;
+    AlarmOn -> Wait;
+
+    Wait -> ReadMotion [label="Sürekli", style="dashed", color="blue"];
+
+    labelloc="t";
+    label="IoT Tabanlı Akıllı Ev Güvenlik Sistemi - Alarm ve Bildirim Süreci";
+}
