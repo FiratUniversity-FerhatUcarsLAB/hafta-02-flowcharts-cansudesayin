@@ -1,0 +1,390 @@
+ChatGpt'ye yazdığım: "IoT tabanlı akıllı ev güvenlik sisteminin alarm ve bildirim süreçlerini modelleyin. demiş şimdi önce IoT tabanlı ne demek açıklar mısın"
+(Burada öncelikle sistemi daha iyi anlamak ve öğrenmek açısından bilmediğim yerleri açıklamasını istedim.)
+ChatGpt'nin Buna Cevabı:
+Tabii 🌐
+“IoT tabanlı” demek, "Internet of Things (Nesnelerin İnterneti)" teknolojisini kullanan sistem demektir.
+Yani:
+IoT tabanlı bir sistem, fiziksel cihazların (örneğin sensörler, kameralar, lambalar, termostatlar, alarmlar vb.) internete bağlı olduğu ve birbirleriyle veri alışverişi yapabildiği bir yapıdır.
+💡 Basitçe:
+Normal bir alarm sistemi yalnızca çaldığında seni uyarır,
+ama IoT tabanlı bir alarm sistemi, internete bağlı olduğu için:
+Telefonuna veya mailine anında bildirim gönderir,
+Sensör verilerini buluta kaydeder,
+Kamerayı uzaktan canlı izlemene izin verir,
+Gerekirse diğer akıllı cihazlarla (örneğin kapı kilidi, ışık sistemi) otomatik iletişime geçer.
+Örneğin:
+Hareket sensörü evde olağandışı bir hareket algıladığında, sistem hem sireni çalıştırır hem de telefona “Hareket algılandı!” bildirimi yollar.
+İstersen şimdi bu IoT tabanlı güvenlik sisteminin alarm ve bildirim sürecini adım adım modelleyen bir pseudocode da yazabilirim — ister misin o kısmı da ekleyeyim?
+
+ChatGpt'ye Yazdığım: "Akıllı ev güvenlik sistemi 7/24 çalışır. Ana döngü içinde sensör okuma, tehdit algılama, alarm verme ve bildirim gönderme süreçlerini içeren; Sistem aktif mi kontrolü (koşul), Sensör okuma döngüsü (döngü - sürekli), Hareket sensörü kontrolü (koşul), Kapı/pencere sensörü kontrolü (koşul), Kamera aktivasyonu (koşul), Yanlış alarm kontrolü (ev sahibi evde mi?) (koşul), Alarm seviyesi belirleme (1-düşük, 2-orta, 3-yüksek) (koşul), Bildirim gönderme (SMS + App + Email) Bekle ve tekrar kontrol et (döngü), Alarm sıfırlama veya devam ettirme (koşul), gibi sistem gereksinimlerini içeren bir psuedocode yazar mısın?"
+(Burada sistem gereksinimlerini ve yazacağı psuedocode'un içeriklerini detaylı bir şekilde anlatmaya çalıştım.)
+ChatGpt'nin Cevabı:
+Elbette 🔒 İşte IoT tabanlı Akıllı Ev Güvenlik Sistemi için, belirttiğin tüm gereksinimleri içeren detaylı bir pseudocode örneği:
+
+🧠 PSEUDOCODE – IoT Tabanlı Akıllı Ev Güvenlik Sistemi
+BASLA
+
+// Sistem Ayarları
+SISTEM_AKTIF = DOGRU
+EV_SAHIBI_EVDE = YANLIS
+ALARM_DURUMU = KAPALI
+ALARM_SEVIYESI = 0
+
+// Ana Döngü (7/24 Çalışma)
+DÖNGÜ SISTEM_AKTIF EŞİT İSE DOGRU
+    YAZ "Sistem aktif, sensörler izleniyor..."
+    
+    // 1. Sensör Okuma Döngüsü
+    HAREKET_ALGILANDI = HAREKET_SENSORU_OKU()
+    KAPI_ACILDI = KAPI_SENSORU_OKU()
+    PENCERE_ACILDI = PENCERE_SENSORU_OKU()
+    
+    // 2. Kamera Aktivasyonu (Koşul)
+    EGER HAREKET_ALGILANDI VEYA KAPI_ACILDI VEYA PENCERE_ACILDI İSE
+        KAMERA_AKTIF_ET()
+        YAZ "Kamera aktif. Görüntü kaydı başlatıldı."
+    EGER-SONU
+
+    // 3. Tehdit Algılama ve Yanlış Alarm Kontrolü
+    EGER EV_SAHIBI_EVDE İSE
+        YAZ "Ev sahibi evde, alarm tetiklenmedi (Yanlış alarm engellendi)."
+        ALARM_DURUMU = KAPALI
+    DEĞİLSE
+        // 4. Alarm Seviyesi Belirleme
+        EGER HAREKET_ALGILANDI VE (KAPI_ACILDI VEYA PENCERE_ACILDI) İSE
+            ALARM_SEVIYESI = 3 // Yüksek tehdit
+        DEĞİLSE EGER HAREKET_ALGILANDI İSE
+            ALARM_SEVIYESI = 2 // Orta tehdit
+        DEĞİLSE EGER KAPI_ACILDI VEYA PENCERE_ACILDI İSE
+            ALARM_SEVIYESI = 1 // Düşük tehdit
+        DEĞİLSE
+            ALARM_SEVIYESI = 0 // Tehdit yok
+        EGER-SONU
+
+        // 5. Alarm Verme
+        EGER ALARM_SEVIYESI > 0 İSE
+            ALARM_DURUMU = AÇIK
+            SESLI_ALARM_CALISTIR()
+            YAZ "Alarm çaldı! Seviye: " + ALARM_SEVIYESI
+        EGER-SONU
+
+        // 6. Bildirim Gönderme
+        EGER ALARM_SEVIYESI > 0 İSE
+            SMS_GONDER("Alarm durumu: Seviye " + ALARM_SEVIYESI)
+            APP_BILDIRIM_GONDER("Evde hareket tespit edildi!")
+            EMAIL_GONDER("Akıllı ev sistemi uyarısı", "Alarm seviyesi: " + ALARM_SEVIYESI)
+            YAZ "Bildirimler gönderildi (SMS + Uygulama + E-posta)."
+        EGER-SONU
+    EGER-SONU
+
+    // 7. Alarm Sıfırlama veya Devam Ettirme
+    EGER ALARM_DURUMU EŞİT İSE AÇIK İSE
+        YAZ "Alarmı sıfırlamak istiyor musunuz? (E/H)"
+        OKU CEVAP
+        EGER CEVAP EŞİT İSE "E" İSE
+            ALARM_DURUMU = KAPALI
+            ALARM_SEVIYESI = 0
+            YAZ "Alarm sıfırlandı."
+        DEĞİLSE
+            YAZ "Alarm açık durumda kalıyor."
+        EGER-SONU
+    EGER-SONU
+
+    // 8. Bekle ve Tekrar Kontrol Et
+    BEKLE(5 SANİYE)
+DÖNGÜ-SONU
+
+BITIR
+
+⚙️ Özetle Bu Algoritma:
+7/24 çalışır ve sensörleri sürekli kontrol eder.
+Hareket, kapı veya pencere açılması durumunda tehdit seviyesini belirler.
+Ev sahibi evdeyse yanlış alarm oluşmaz.
+Alarm durumuna göre hem sesli uyarı hem de SMS, mobil uygulama ve e-posta bildirimi gönderir.
+Kullanıcı alarmı sıfırlayabilir veya sistem tekrar izleme moduna döner.
+İstersen bunu şimdi bir sonraki adımda Graphviz DOT formatında diyagram hâline de çevirebilirim. Görsel algoritma akışı istersen ekleyeyim mi?
+
+ChatGpt'ye Yazdığım: "DOT dilinde sonsuz döngüyü göstermek için geri ok kullan ve ”Sürekli” etiketi ekle"
+ChatGpt'nin Cevabı:
+Harika 🧠 — işte yukarıdaki IoT tabanlı akıllı ev güvenlik sistemi algoritmasının,
+sonsuz döngüyü “geri ok” ve “Sürekli” etiketiyle gösteren Graphviz DOT diyagramı:
+
+digraph IoT_Ev_Guvenlik_Sistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded, fontsize=10];
+
+    BASLA [shape=oval, label="BASLA"];
+    Sistem_Aktif [shape=diamond, label="Sistem aktif mi?"];
+    Sensor_Oku [shape=box, label="Sensör verilerini oku\n(Hareket, Kapı, Pencere)"];
+    Kamera_Kontrol [shape=diamond, label="Herhangi bir sensör tetiklendi mi?"];
+    Kamera_Aktivasyon [shape=box, label="Kamera aktif et\n(Görüntü kaydı başlat)"];
+    Yanlis_Alarm [shape=diamond, label="Ev sahibi evde mi?"];
+    Tehdit_Seviye [shape=diamond, label="Tehdit türü?"];
+    Alarm_Calistir [shape=box, label="Sesli alarmı çalıştır"];
+    Bildirim_Gonder [shape=box, label="Bildirim gönder (SMS + App + E-mail)"];
+    Alarm_Sifirla [shape=diamond, label="Alarm sıfırlansın mı?"];
+    Sifirla [shape=box, label="Alarmı sıfırla"];
+    Bekle [shape=parallelogram, label="BEKLE (5 sn)"];
+    BITIR [shape=oval, label="BITIR"];
+
+    // Akışlar
+    BASLA -> Sistem_Aktif;
+    Sistem_Aktif -> Sensor_Oku [label="Evet"];
+    Sistem_Aktif -> BITIR [label="Hayır"];
+    Sensor_Oku -> Kamera_Kontrol;
+    Kamera_Kontrol -> Kamera_Aktivasyon [label="Evet"];
+    Kamera_Kontrol -> Yanlis_Alarm [label="Hayır"];
+    Kamera_Aktivasyon -> Yanlis_Alarm;
+
+    Yanlis_Alarm -> Tehdit_Seviye [label="Hayır (Ev sahibi evde değil)"];
+    Yanlis_Alarm -> Bekle [label="Evet (Yanlış alarm)"];
+
+    Tehdit_Seviye -> Alarm_Calistir [label="1-2-3 Seviye"];
+    Tehdit_Seviye -> Bekle [label="0 (Tehdit yok)"];
+    Alarm_Calistir -> Bildirim_Gonder;
+    Bildirim_Gonder -> Alarm_Sifirla;
+
+    Alarm_Sifirla -> Sifirla [label="Evet"];
+    Alarm_Sifirla -> Bekle [label="Hayır"];
+    Sifirla -> Bekle;
+
+    // Sonsuz Döngü (Sürekli)
+    Bekle -> Sensor_Oku [label="Sürekli", color=blue, fontcolor=blue];
+
+    // Bitir
+    BITIR [shape=oval, label="SİSTEM DURDURULDU"];
+}
+
+💡 Açıklama:
+Sonsuz döngü “BEKLE (5 sn)” düğümünden geri ok ile Sensor_Oku düğümüne bağlanır.
+→ Etiket: "Sürekli" (sistemin 7/24 çalıştığını gösterir).
+Diamond (karar) düğümler koşulları, box işlem adımlarını, parallelogram giriş/çıkış işlemlerini temsil eder.
+“Sistem aktif mi?” kararıyla başlar, eğer aktifse sürekli sensörleri izler; aksi hâlde sistem kapanır.
+İstersen bu diyagramı görsel hâline çevirebilirim (örneğin PNG veya SVG olarak). Görsel versiyonunu da oluşturayım mı?
+
+ChatGpt'ye Yazdığım: "1-2-3 seviye alarmları çalıştır yerine tehdit boyutun göre alarm seviyesini de arttırarak çalıştırsın.
+örneğin birden fazla şey tetiklendiyse seviye 3 alarm eğer sadece bir şey tetiklendiyse seviye 1 vs gibİ. buna göre hem psuedocodu hem de DOT kodunu düzenler misin?"
+(Burada üstte yazdığı DOT kodunu test ettikten sonra değiştirmesini istediğim yerleri iki kısımda da düzelip daha doğru ve mantıklı hale getirip geliştirmeye çalıştım. Elde ettiğim parçalanmış sadece alarm psuedocodu'nu bütün olarak eklettikten sonra detaylandırmasını istedim)
+ChatGpt'nin Cevabı:
+Tabii! 🔹 Şimdi IoT tabanlı Akıllı Ev Güvenlik Sistemi pseudocode’unu daha detaylı hâle getiriyoruz. Bu sürümde her sensör türü ayrı ayrı kontrol edilecek, tehdit sayısı ve alarm seviyesi adım adım hesaplanacak, yanlış alarmlar, bildirimler ve alarm sıfırlama mantığı net şekilde gösterilecek:
+
+🧠 Detaylı Pseudocode – IoT Akıllı Ev Güvenlik Sistemi
+BASLA
+
+// ---------------------------
+// 1. Sistem Başlatma
+// ---------------------------
+SISTEM_AKTIF = DOGRU
+ALARM_DURUMU = KAPALI
+ALARM_SEVIYESI = 0
+EV_SAHIBI_EVDE = YANLIS
+
+YAZ "Akıllı Ev Güvenlik Sistemi başlatıldı."
+
+// ---------------------------
+// 2. Ana Döngü (Sürekli Sensör İzleme)
+// ---------------------------
+DÖNGÜ SISTEM_AKTIF EŞİT İSE DOGRU
+    YAZ "Sistem aktif. Sensörler izleniyor..."
+
+    tehditSayisi = 0
+    tetiklenenSensorler = []
+
+    // ---------------------------
+    // 2a. Sensör Kontrolleri
+    // ---------------------------
+    HAREKET_ALGILANDI = HAREKET_SENSORU_OKU()
+    EĞER HAREKET_ALGILANDI = DOGRU İSE
+        tehditSayisi = tehditSayisi + 1
+        tetiklenenSensorler.EKLE("Hareket Sensörü")
+    EĞER-SONU
+
+    KAPI_ACILDI = KAPI_SENSORU_OKU()
+    PENCERE_ACILDI = PENCERE_SENSORU_OKU()
+    EĞER KAPI_ACILDI = DOGRU İSE
+        tehditSayisi = tehditSayisi + 1
+        tetiklenenSensorler.EKLE("Kapı Sensörü")
+    EĞER-SONU
+    EĞER PENCERE_ACILDI = DOGRU İSE
+        tehditSayisi = tehditSayisi + 1
+        tetiklenenSensorler.EKLE("Pencere Sensörü")
+    EĞER-SONU
+
+    // Kamera tetiklenmesi (isteğe bağlı)
+    EĞER tehditSayisi > 0 İSE
+        KAMERA_AKTIF_ET()
+        YAZ "Kamera aktif. Görüntü kaydı başlatıldı."
+    EĞER-SONU
+
+    // ---------------------------
+    // 2b. Yanlış Alarm Kontrolü
+    // ---------------------------
+    EĞER EV_SAHIBI_EVDE = DOGRU İSE
+        YAZ "Ev sahibi evde. Yanlış alarm engellendi."
+        ALARM_DURUMU = KAPALI
+        ALARM_SEVIYESI = 0
+    DEĞİLSE
+        // ---------------------------
+        // 2c. Alarm Seviyesi Hesaplama
+        // ---------------------------
+        EĞER tehditSayisi = 1 İSE ALARM_SEVIYESI = 1
+        EĞER tehditSayisi = 2 İSE ALARM_SEVIYESI = 2
+        EĞER tehditSayisi >= 3 İSE ALARM_SEVIYESI = 3
+        YAZ "Tespit edilen tehdit sayısı: " + tehditSayisi
+        YAZ "Tetiklenen sensörler: " + tetiklenenSensorler
+        YAZ "Alarm seviyesi: " + ALARM_SEVIYESI
+
+        // ---------------------------
+        // 2d. Alarm ve Bildirim
+        // ---------------------------
+        EĞER ALARM_SEVIYESI > 0 İSE
+            ALARM_DURUMU = AÇIK
+            SESLI_ALARM_CALISTIR(ALARM_SEVIYESI)
+            YAZ "Alarm çaldı!"
+
+            SMS_GONDER("Alarm durumu: Seviye " + ALARM_SEVIYESI)
+            APP_BILDIRIM_GONDER("Evde hareket tespit edildi!")
+            EMAIL_GONDER("Akıllı ev sistemi uyarısı", "Alarm seviyesi: " + ALARM_SEVIYESI)
+            YAZ "Bildirimler gönderildi (SMS + Uygulama + E-posta)."
+        DEĞİLSE
+            YAZ "Her şey normal."
+        EĞER-SONU
+    EĞER-SONU
+
+    // ---------------------------
+    // 2e. Alarm Sıfırlama / Devam Ettirme
+    // ---------------------------
+    EĞER ALARM_DURUMU = AÇIK İSE
+        YAZ "Alarmı sıfırlamak istiyor musunuz? (E/H)"
+        OKU CEVAP
+        EĞER CEVAP = "E" İSE
+            ALARM_DURUMU = KAPALI
+            ALARM_SEVIYESI = 0
+            YAZ "Alarm sıfırlandı."
+        DEĞİLSE
+            YAZ "Alarm açık durumda kalıyor."
+        EĞER-SONU
+    EĞER-SONU
+
+    // ---------------------------
+    // 2f. Bekle ve Döngüye Dön
+    // ---------------------------
+    BEKLE(5 SANİYE)
+DÖNGÜ-SONU
+
+BITIR
+✅ Özellikler ve Geliştirmeler
+-Her sensör ayrı ayrı kontrol ediliyor: Hareket, kapı, pencere, kamera vb.
+-Tehdit sayısı ve tetiklenen sensörler listeleniyor → alarm seviyesi dinamik hesaplanıyor.
+-Yanlış alarm engelleniyor → ev sahibi evdeyse alarm tetiklenmiyor.
+-Sesli alarm + SMS + App + Email ile bildirim gönderimi yapılabiliyor.
+-Alarm sıfırlama veya devam ettirme seçeneği sunuluyor.
+-Sonsuz döngü ile sistem 7/24 izleme yapıyor ve her 5 saniyede bir sensörler tekrar okunuyor.
+
+🔹 Şimdi detaylı IoT tabanlı Akıllı Ev Güvenlik Sistemi için, tehdit sayısına göre alarm seviyesi belirleme, sensör türlerini ve bildirim sürecini içeren Graphviz DOT kodunu oluşturuyorum.
+💠 Graphviz DOT Kod – IoT Akıllı Ev Güvenlik Sistemi
+digraph IoT_Smart_Home {
+    rankdir=TB;
+    node [shape=rectangle, style=rounded, fontname="Arial"];
+
+    // Başlangıç ve sistem aktif kontrolü
+    Start [label="Sistem Başlat"];
+    CheckActive [shape=diamond, label="Sistem aktif mi?"];
+
+    // Sensör kontrolleri
+    ReadMotion [label="Hareket Sensörü Oku"];
+    ReadDoor [label="Kapı Sensörü Oku"];
+    ReadWindow [label="Pencere Sensörü Oku"];
+    ActivateCamera [label="Kamera Aktif Et / Kayıt Başlat"];
+
+    // Tehdit sayısı kontrolü
+    ThreatCount [shape=diamond, label="Tehdit sayısı > 0?"];
+
+    // Yanlış alarm kontrolü
+    CheckOwner [shape=diamond, label="Ev sahibi evde mi?"];
+
+    // Alarm seviyesi belirleme
+    DetermineLevel [shape=diamond, label="Tehdit sayısına göre\nalarm seviyesi belirle"];
+    Alarm1 [label="Alarm Seviyesi 1 (düşük)"];
+    Alarm2 [label="Alarm Seviyesi 2 (orta)"];
+    Alarm3 [label="Alarm Seviyesi 3 (yüksek)"];
+
+    // Alarm ve bildirim
+    TriggerAlarm [label="Sesli Alarm Çal"];
+    SendNotify [label="Bildirim Gönder (SMS + App + Email)"];
+    FalseAlarm [label="Yanlış alarm – işlem yapılmadı"];
+    Normal [label="Her şey normal"];
+
+    // Alarm sıfırlama
+    ResetAlarm [shape=diamond, label="Alarmı sıfırlamak istiyor musunuz?"];
+    AlarmOff [label="Alarm kapandı"];
+    AlarmOn [label="Alarm açık durumda"];
+
+    // Bekleme ve döngü
+    Wait [label="Bekle (5 saniye)"];
+
+    End [label="Sistem Sonu"];
+
+    // ---------------------------
+    // Bağlantılar
+    // ---------------------------
+    Start -> CheckActive;
+    CheckActive -> End [label="Hayır"];
+    CheckActive -> ReadMotion [label="Evet"];
+
+    ReadMotion -> ReadDoor;
+    ReadDoor -> ReadWindow;
+    ReadWindow -> ActivateCamera;
+
+    ActivateCamera -> ThreatCount;
+
+    ThreatCount -> Normal [label="Hayır"];
+    ThreatCount -> CheckOwner [label="Evet"];
+
+    CheckOwner -> FalseAlarm [label="Evet"];
+    CheckOwner -> DetermineLevel [label="Hayır"];
+
+    DetermineLevel -> Alarm1 [label="1 tehdit"];
+    DetermineLevel -> Alarm2 [label="2 tehdit"];
+    DetermineLevel -> Alarm3 [label="≥3 tehdit"];
+
+    Alarm1 -> TriggerAlarm;
+    Alarm2 -> TriggerAlarm;
+    Alarm3 -> TriggerAlarm;
+
+    TriggerAlarm -> SendNotify;
+    SendNotify -> ResetAlarm;
+    FalseAlarm -> Wait;
+    Normal -> Wait;
+
+    ResetAlarm -> AlarmOff [label="Evet"];
+    ResetAlarm -> AlarmOn [label="Hayır"];
+
+    AlarmOff -> Wait;
+    AlarmOn -> Wait;
+
+    Wait -> ReadMotion [label="Sürekli", style="dashed", color="blue"];
+
+    labelloc="t";
+    label="IoT Tabanlı Akıllı Ev Güvenlik Sistemi - Alarm ve Bildirim Süreci";
+}
+
+
+💡 Özellikler:
+-Her sensör ayrı düğüm olarak gösterildi.
+-Tehdit sayısına göre alarm seviyesi hesaplandı ve alarm/bildirim süreci tetiklendi.
+-Yanlış alarm durumu, ev sahibi evdeyse farklı bir yol izler.
+-Döngü “Sürekli” etiketi ile geri okla gösterildi.
+İstersen bunu bir sonraki adımda ek sensörler (gaz, duman, su baskını) ve alarm kombinasyonlarına göre seviye artırma mantığı ile daha da detaylandırabiliriz.
+Bunu da yapmamı ister misin?
+
+ChatGpt'ye Yazdığım: "şimdi bu sistemin açıklamasını yapar mısın tekrar"
+ChatGpt'nin Cevabı:
+Tabii! İşte IoT tabanlı Akıllı Ev Güvenlik Sistemi için kısa ve öz bir açıklama:
+Bu sistem, evdeki hareket, kapı ve pencere sensörlerini sürekli izleyen bir IoT tabanlı akıllı güvenlik sistemidir.
+Sensörlerden gelen verilerle tehdit sayısı belirlenir ve buna göre alarm seviyesi (1–3) dinamik olarak ayarlanır.
+Ev sahibi evdeyse yanlış alarmlar engellenir; aksi halde sesli alarm çalınır ve SMS, uygulama bildirimi ile e-posta gönderilir.
+Kamera, tehdit tespit edildiğinde aktif olur ve kayıt başlatır.
+Sistem, alarm sıfırlama veya devam ettirme seçeneği sunar ve sonsuz döngü ile 7/24 çalışır.
+
+İstersen bunu daha detaylı, adım adım mantık açıklaması şeklinde de yazabilirim. Bunu yapmamı ister misin?
