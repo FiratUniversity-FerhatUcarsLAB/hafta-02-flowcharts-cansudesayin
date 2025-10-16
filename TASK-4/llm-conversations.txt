@@ -1,5 +1,5 @@
 ChatGpt'ye yazdığım: "öğrenci ders kayıt sisteminin tüm kontrollerini ve kurallarını modelleyen, öğrenci girişi (öğrenci no + şifre) Ders listesini görüntüleme (döngü) Her ders için: Kontenjan kontrolü (koşul) ön koşul dersi kontrolü (koşul), Zaman çakışması kontrolü (koşul) Kredi limiti kontrolü (toplam ≤ 35) (koşul), Ders ekleme/çıkarma (döngü), Danışman onayı gerekli mi? (GPA ¡ 2.5 ise) (koşul), Kayıt özeti gösterme ve kayıt onaylama
-içeren bir psuedocode hazırlar mısın?" burada önce yapması gerekenleri listeleyerek kaba taslak alıyorum
+içeren bir psuedocode hazırlar mısın?" burada önce yapması gerekenleri listeleyerek kaba taslak alıyorum.
 ChatGpt'nin Cevabı:
 Harika! 🎓
 Aşağıda “Öğrenci Ders Kayıt Sistemi” için tüm kontrolleri ve kuralları kapsayan ayrıntılı bir pseudocode yer alıyor.
@@ -137,7 +137,7 @@ Kayıt özeti gösterildikten sonra öğrenci işlemi onaylar veya iptal eder.
 İstersen bu algoritmayı da Graphviz DOT formatında görsel akış diyagramına dönüştürebilirim — ister misin?
 
 ChatGpt'ye yazdığım: "Genel Yapısında üniversite ders kayıt sisteminin genel akışını açıkla: giriş, ders listesi, ders seçimi, kontroller, onaylama vb. Kontrol Mekanizmalarında ders kaydında yapılması gereken kontrolleri listele: kontenjan, ön koşul, zaman cakısması, kredi limiti, danısman onayı. Sonra iç içe EGER- ISE yapıları ve döngüler kullanarak detaylı bir psuedocode yaz"
-Burada bizdenen istenen mekanizmaları da anlatarak psuedocode'u detaylı ve daha doğru bir hale getirmek istiyorum
+(Burada bizdenen istenen mekanizmaları da anlatarak psuedocode'u detaylı ve daha doğru bir hale getirmek istiyorum.)
 ChatGpt'nin Cevabı:
 Harika — aşağıda senin için üç bölüme ayrılmış, üniversite ders kayıt sisteminin genel akışı, kontrol mekanizmaları ve tam pseudocode modeli yer alıyor.
 Bu yapı, hem algoritma mantığını açıkça gösterir hem de ders kayıt sistemini gerçekçi biçimde modellemiş olur.
