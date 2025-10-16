@@ -59,7 +59,7 @@ BITIR
 İstersen bunu Graphviz DOT formatına çevirip akış diyagramı hâline de getirebilirim. Bunu yapayım mı?
 
 ChatGpt'ye yazdığım:"Sistem Gereksinimlerini Hasta kimlik doğrulama (TC No), İşlem seçimi: 1-Randevu Al, 2-Tahlil Sonucu Gör (koşul), Randevu modülü: Poliklinik seçimi, doktor listesi, uygun saatler (döngü), Randevu onayı ve SMS gönderimi olacak şekilde düzenler misin?
-Burada İstenen sistem gereksinimlerini de ekleyerek daha geniş taslak almak istedim
+(Burada İstenen sistem gereksinimlerini de ekleyerek daha geniş taslak almak istedim.)
 ChatGpt'nin buna cevabı:Harika — verdiğin sistem gereksinimlerine göre algoritmayı daha sade, net ve gereksinim odaklı şekilde yazabiliriz.
 Aşağıda bu hastane randevu sisteminin pseudocode’u yer alıyor 👇
 
@@ -119,8 +119,8 @@ SON_EGER
 
 BITIR
 
-ChatGpt'ye yazdığım:"Tahlil sonucu goruntuleme sistemi: kimlik dogrulama, tahlil varlıgı kontrolu, sonuc hazır mı kontrolu, goruntuleme veya bekleme mesajı, PDF indirme. Pseudocode yaz" Randevu alma sistemi istenen gereksinimleri de ekledikten sonra daha düzgün bir hal aldığından bir sonraki sözde kod'a geçtim.
-Gereksinimleri eklemeden önce daha sade ve anlaşılabilir bir taslak alabilmek için önce prompt'u giriyorum.
+ChatGpt'ye yazdığım:"Tahlil sonucu goruntuleme sistemi: kimlik dogrulama, tahlil varlıgı kontrolu, sonuc hazır mı kontrolu, goruntuleme veya bekleme mesajı, PDF indirme. Pseudocode yaz" (Randevu alma sistemi istenen gereksinimleri de ekledikten sonra daha düzgün bir hal aldığından bir sonraki sözde kod'a geçtim.
+Gereksinimleri eklemeden önce daha sade ve anlaşılabilir bir taslak alabilmek için önce prompt'u giriyorum.)
 ChatGpt'nin buna cevabı:
 Elbette! Aşağıda verdiğin gereksinimlere tam uygun şekilde hazırlanmış, koşul ve işlem sırasını açıkça gösteren “Tahlil Sonucu Görüntüleme Sistemi” pseudocode’u yer alıyor 👇
 
